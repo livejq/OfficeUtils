@@ -39,7 +39,7 @@ public class ExcelUtils {
     }
 
     /**
-     * 設置一個工作簿
+     * 設置一個当前操作的工作簿
      * @param fileName 工作簿的絕對地址
      */
     public static void setWorkook(String fileName) {
@@ -59,7 +59,6 @@ public class ExcelUtils {
                 workBook = new XSSFWorkbook(stream);
             } else {
                 // LOGGER.debug("此文件{}不是word文件", path);
-                // 这里要logger
                 System.out.printf("此文件不是word文件");
             }
         }catch (IOException e) {
@@ -112,7 +111,7 @@ public class ExcelUtils {
         int lastColumn = cellRangeAddress.getLastColumn();
         for(int i = firstColumn; i <= lastRow; i++){
             Map colMap = new HashMap<Integer,String>();
-            for (int j = firstColumn; j <lastColumn ; j++) {
+            for (int j = firstColumn; j <= lastColumn ; j++) {
                 colMap.put(j,getCellValueAsString(getCell(sheet,new CellAddress(i,j))));
             }
             cellMap.put(i,colMap);
@@ -127,34 +126,38 @@ public class ExcelUtils {
      */
     public static String getCellValueAsString(Cell cell){
         // 判断是否为null或空串
-        if (cell==null || cell.toString().trim().equals("")) {
+        if (cell==null || "".equals(cell.toString().trim())) {
             return "";
         }
         String cellValue = "";
         // 获取单元格类型名称
         CellType cellType = cell.getCellType();
         switch (cellType){
-            case STRING : //字符
+            case STRING :
                 cellValue= cell.getStringCellValue().trim();
                 cellValue= StringUtils.isEmpty(cellValue) ? "" : cellValue;
                 break;
-            case BOOLEAN: //布尔值
+            case BOOLEAN:
                 cellValue = String.valueOf(cell.getBooleanCellValue());
                 break;
-            case NUMERIC: //数值,日期,货币等也为数值
-                if (HSSFDateUtil.isCellDateFormatted(cell)) {  //判断日期类型
+            // 数值,日期,货币等也为数值
+            case NUMERIC:
+                if (HSSFDateUtil.isCellDateFormatted(cell)) {
                     cellValue =    String.valueOf(cell.getDateCellValue());
-                } else {  //否
+                } else {
                     cellValue = new DecimalFormat("#.######").format(cell.getNumericCellValue());
                 }
                 break;
-            case ERROR: // 异常
+            case ERROR:
                 break;
-            case _NONE: // 未知类型
+            // 未知类型
+            case _NONE:
                 break;
-            case FORMULA: // 公式
+            // 公式
+            case FORMULA:
                 break;
-            case BLANK: // 空白
+            // 空白
+            case BLANK:
                 break;
             default:
                 cellValue = "";
