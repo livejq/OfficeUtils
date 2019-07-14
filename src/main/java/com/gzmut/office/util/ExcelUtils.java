@@ -3,7 +3,6 @@ package com.gzmut.office.util;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,7 +21,7 @@ public class ExcelUtils {
     /** XSSFWorkbook工作簿对象*/
     private static XSSFWorkbook workBook;
 
-    /** 放回一個工作簿對象*/
+    /** 返回一個工作簿對象*/
     public static XSSFWorkbook getWorkBook() {
         return workBook;
     }
@@ -69,7 +68,7 @@ public class ExcelUtils {
 
 
     /**
-     * 判断是表名是否存在
+     * 判断表名是否存在
      * @param sheetName
      * @return
      */
