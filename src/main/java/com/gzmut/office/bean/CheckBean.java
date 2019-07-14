@@ -44,12 +44,13 @@ public class CheckBean{
     /**
      * 静态内部类
      * 定位类 Location
-     * 定位成员变量 lp,ls
+     * 定位成员变量 lp,ls,lg,lr
      * 在excel中，lp定位表，ls在lp的基础上定位单元格
      * 在word中，lp定位段落，定位字符串；
+     * 在ppt中，lp定位幻灯片页，ls定位对象（如幻灯片、文本框等），lg定位段落，lr定位某串字符
      */
     static class Location {
-        public String lp,ls;
+        public String lp,ls,lg,lr;
         public String getLp() {
             return lp;
         }
@@ -61,6 +62,18 @@ public class CheckBean{
         }
         public void setLs(String ls) {
             this.ls = ls;
+        }
+        public String getLg() {
+            return lg;
+        }
+        public void setLg(String lg) {
+            this.lg = lg;
+        }
+        public String getLr() {
+            return lr;
+        }
+        public void setLr(String lr) {
+            this.lr = lr;
         }
     }
 }
