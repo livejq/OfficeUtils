@@ -89,6 +89,12 @@ public class ExcelUtils {
         return  workBook.getSheet(sheetName) == null ? false : true;
     }
 
+    /**
+     * 获取一个单元格或区域的值
+     * @param sheetName 表名
+     * @param cellRangeAddress 一个单元格或访问 eg A1 | A2:C3
+     * @return
+     */
     public static Map<Integer, Map<Integer,String>> getRegionCellValue(String sheetName,CellRangeAddress cellRangeAddress){
         // 判断workbook,sheetName,cellRangeAddress是否为空
         if (workBook == null || sheetName == null || "".equals(sheetName) || cellRangeAddress == null){
@@ -176,5 +182,96 @@ public class ExcelUtils {
             return null;
         }
         return  sheet.getRow(cellAddress.getRow()).getCell(cellAddress.getColumn());
+    }
+
+    /**
+     * 获取单元格字号
+     * @param sheetname 表名
+     * @param cell 单元格
+     * @return 返回字号
+     */
+    public String getCellFontHeight(String sheetname,String cell){
+        //  Short size   ;Get the font height in unit's of 1/20th of a point.
+        return (new Short(workBook.getSheet(sheetname).
+                getRow(getrow(cell)-1).getCell(getcolumn(cell)-1).
+                getCellStyle().getFont().getFontHeight())).toString();
+    }
+
+    /**
+     * 获取字体
+     * @param sheetname 表名
+     * @param cell 单元格
+     * @return 返回字体
+     */
+    public String getCellFont(String sheetname,String cell){
+        return workBook.getSheet(sheetname).getRow(getrow(cell)-1).getCell(getcolumn(cell)-1).getCellStyle().getFont().getFontName();
+    }
+
+    /**
+     * 获取字体颜色
+     * @param sheetname 表名
+     * @param cell 单元格
+     * @return 返回字体颜色
+     */
+    public String getCellFontColor(String sheetname,String cell){
+
+        return rgbToString((workBook.getSheet(sheetname).getRow(getrow(cell)-1).getCell(getcolumn(cell)-1).getCellStyle().getFont().getXSSFColor().getRGB()));
+    }
+
+
+
+
+
+
+    /**
+     *
+     * @param cell 把cell（A3）转化为(1 3)
+     * @return
+     */
+    public static int getcolumn(String cell){//cell="AC5"
+        Map<Character,Integer> map = new HashMap();
+        map.put('A',1);
+        map.put('B',2);
+        map.put('C',3);
+        map.put('D',4);
+        map.put('E',5);
+        map.put('F',6);
+        map.put('G',7);
+        map.put('H',8);
+        map.put('I',9);
+        map.put('J',10);
+        map.put('K',11);
+        map.put('L',12);
+        map.put('M',13);
+        map.put('N',14);
+        map.put('O',15);
+        map.put('P',16);
+        map.put('Q',17);
+        map.put('R',18);
+        map.put('S',19);
+        map.put('T',20);
+        map.put('U',21);
+        map.put('V',22);
+        map.put('W',23);
+        map.put('X',24);
+        map.put('Y',25);
+        map.put('Z',26);
+        int row = 0;
+        String reg = "[^a-zA-Z]";
+        cell = cell.replaceAll(reg,"");
+        char[] cell1 = cell.toCharArray();
+        for(int i = 0,j=cell1.length-1;i<cell1.length;i++,j--){
+            row+=map.get(cell1[i])*Math.pow(26,j);
+        }
+        return row;
+    }
+    public static int getrow(String cell){
+        String reg = "[!^a-zA-Z]";
+        int num =(Integer.parseInt(cell.replaceAll(reg,"")));
+        return num;
+    }
+    public String rgbToString(byte[] RGB){
+        System.out.println(RGB);
+        return new String(RGB);
     }
 }
