@@ -41,7 +41,7 @@ public class ExcelUtils {
      * 設置一個当前操作的工作簿
      * @param fileName 工作簿的絕對地址
      */
-    public static void setWorkook(String fileName) {
+    public static void setWorkbook(String fileName) {
         FILENAME = fileName;
         // 判断字符串是否为空
         if (FILENAME==null || "".equals(FILENAME)){
