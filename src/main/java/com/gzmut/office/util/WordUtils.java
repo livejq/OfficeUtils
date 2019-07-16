@@ -6,6 +6,7 @@ import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
 
 import java.io.*;
 import java.util.Arrays;
@@ -29,7 +30,7 @@ public class WordUtils {
      * @return
      * @throws IOException
      */
-    public static XWPFDocument getXWPDocument(String fileName)  {
+    public XWPFDocument getXWPDocument(String fileName)  {
         XWPFDocument document = null;
         // 文件名为空或者null,返回null
         if (fileName == null || "".equals(fileName)){
@@ -45,6 +46,7 @@ public class WordUtils {
                 //进行转换
                 //document=;
             } else if (fileName.endsWith(".docx")){
+                System.out.println(fileName);
                 document = new XWPFDocument(stream);
             } else {
 //                LOGGER.debug("此文件{}不是word文件", path);
@@ -113,5 +115,41 @@ public class WordUtils {
             }
         }
         return contextList;
+    }
+
+    /**
+     * 全文范围内搜索，如果存在返回true
+     * @param text 要搜索的字符串
+     * @return 正确或错误信息
+     */
+    public String checkAllText(String text){
+        //stream = new FileInputStream(new File(fileName));
+        //XWPFDocument document = new XWPFDocument(stream).getXWPFDocument();
+        //List<XWPFParagraph> paragraphList = document.getParagraphs();
+        List<XWPFParagraph> list = document.getParagraphs();
+        for(XWPFParagraph para : list){
+            String t = para.getText();
+            if(t.contains(text)){
+                return "true";
+            }
+        }
+        return "false:文档不存在文本"+text;
+    }
+
+    public String checkDiffFont(){
+        List<XWPFParagraph> list = document.getParagraphs();
+        String fName = "";
+        List<XWPFRun> runs = list.get(0).getRuns();
+        for(XWPFRun r : runs){
+            fName = r.getFontName();
+        }
+        for(XWPFParagraph para : list) {
+            runs = para.getRuns();
+            for(XWPFRun r : runs){
+                if(!fName.equals(r.getFontName())) return "true";
+            }
+
+        }
+        return "false:字体相同";
     }
 }
