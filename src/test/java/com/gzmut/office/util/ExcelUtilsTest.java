@@ -1,8 +1,8 @@
 package com.gzmut.office.util;
 
 import com.alibaba.fastjson.JSONObject;
-import com.google.gson.JsonObject;
-import netscape.javascript.JSObject;
+//import com.google.gson.JsonObject;
+//import netscape.javascript.JSObject;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.util.CellAddress;
@@ -33,7 +33,7 @@ public class ExcelUtilsTest {
 //        XSSFWorkbook workbook = ExcelUtils.getWorkbook("E:\\Desktop\\计算机设备全年销量统计表.xlsx");
  //       System.out.println(ExcelUtils.checkSheetName(workbook, "销情况"));
           // 设置一个工作簿
-          ExcelUtils.setWorkook("E:\\Desktop\\计算机设备全年销量统计表.xlsx");
+         // ExcelUtils.setWorkook("E:\\Desktop\\计算机设备全年销量统计表.xlsx");
           // 获取一个工作簿
           XSSFWorkbook workBook = ExcelUtils.getWorkBook();
           // 获取一个表
