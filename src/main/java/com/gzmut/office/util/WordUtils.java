@@ -2,15 +2,25 @@ package com.gzmut.office.util;
 
 import com.beust.jcommander.internal.Lists;
 import com.google.common.base.CharMatcher;
+import com.gzmut.office.enums.word.WordBackgroundPropertiesEnums;
+import com.gzmut.office.enums.word.WordParagraphPropertiesEnums;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.apache.xmlbeans.XmlObject;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBackground;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDocument1;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STHexColor;
+import org.w3c.dom.NamedNodeMap;
 
 import java.io.*;
 import java.util.Arrays;
 import java.util.List;
+
+import static com.gzmut.office.enums.word.WordBackgroundPropertiesEnums.*;
 
 /**
  * Word文档的工具类
@@ -25,12 +35,54 @@ public class WordUtils {
     public static  XWPFDocument document;
 
     /**
+     * 给单前工具类设置一个word文档
+     * @param fileName word文档 全路径名
+     */
+    public static void setDocment(String fileName){
+        // 文件名为空或者null,返回null
+        if (fileName == null || "".equals(fileName)){
+            return ;
+        }
+        // 设置文件名
+        FILE_NAME = fileName;
+        InputStream stream = null;
+        try {
+            stream = new FileInputStream(new File(fileName));
+            //word为2003，进行转换
+            if (fileName.endsWith(".doc")){
+                //进行转换
+                //document=;
+            } else if (fileName.endsWith(".docx")){
+                // System.out.println(fileName);
+                document = new XWPFDocument(stream);
+            } else {
+//                LOGGER.debug("此文件{}不是word文件", path);
+                //这里要给为logger
+                System.out.printf("此文件不是word文件");
+            }
+        }catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (null != stream){
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+//                    LOGGER.debug("读取word文件失败");
+                    System.out.printf("读取word文件失败");
+                }
+            }
+        }
+        return ;
+
+    }
+    /**
      *  获取word文档的XWPFDocument类，未完善.doc的转换
      * @param fileName 文件名
      * @return
      * @throws IOException
      */
-    public XWPFDocument getXWPDocument(String fileName)  {
+    public static XWPFDocument getDocument(String fileName)  {
         XWPFDocument document = null;
         // 文件名为空或者null,返回null
         if (fileName == null || "".equals(fileName)){
@@ -46,7 +98,7 @@ public class WordUtils {
                 //进行转换
                 //document=;
             } else if (fileName.endsWith(".docx")){
-                System.out.println(fileName);
+                // System.out.println(fileName);
                 document = new XWPFDocument(stream);
             } else {
 //                LOGGER.debug("此文件{}不是word文件", path);
@@ -122,10 +174,12 @@ public class WordUtils {
      * @param text 要搜索的字符串
      * @return 正确或错误信息
      */
-    public String checkAllText(String text){
-        //stream = new FileInputStream(new File(fileName));
-        //XWPFDocument document = new XWPFDocument(stream).getXWPFDocument();
-        //List<XWPFParagraph> paragraphList = document.getParagraphs();
+    public static String checkAllText(String text){
+
+        if(document == null){
+            System.out.println("document为空");
+            return  null;
+        }
         List<XWPFParagraph> list = document.getParagraphs();
         for(XWPFParagraph para : list){
             String t = para.getText();
@@ -136,6 +190,10 @@ public class WordUtils {
         return "false:文档不存在文本"+text;
     }
 
+
+    /**
+     * @return
+     */
     public String checkDiffFont(){
         List<XWPFParagraph> list = document.getParagraphs();
         String fName = "";
@@ -146,10 +204,178 @@ public class WordUtils {
         for(XWPFParagraph para : list) {
             runs = para.getRuns();
             for(XWPFRun r : runs){
-                if(!fName.equals(r.getFontName())) return "true";
+                if(!fName.equals(r.getFontName())) {
+                    return "true";
+                }
             }
 
         }
         return "false:字体相同";
     }
+
+
+    /**
+     * 通过字符串获取段落
+     * @param s 所在段落的字符串
+     * @return XWPFParagraph word 段落对象
+     */
+    public static XWPFParagraph getParagraph(String s){
+        // 获取文档的所有段落
+        List<XWPFParagraph> paragraphs = document.getParagraphs();
+        // 获取文本所在段落
+        XWPFParagraph xwpfParagraph = paragraphs.stream().filter(paragraph -> paragraph.getText().contains(s))
+                .findFirst().get();
+        return xwpfParagraph;
+    }
+    /**
+     * 在段落里查找字符串
+     * 返回一个字符串Run
+     * @param paragraph 一个段落
+     * @param s 要查找的字符串
+     * @return XWPFRUN
+     */
+    public static XWPFRun getRun(XWPFParagraph paragraph, String s){
+        return paragraph.getRuns().stream().filter(xwpfRun -> xwpfRun.getText(0).contains(s)).findFirst().get();
+    }
+
+
+    /**
+     * 获取段落属性
+     * @param paragraph 所在段落
+     * @param property  属性
+     * @return
+     */
+    public static String getParagraphProperties(XWPFParagraph paragraph, String property){
+        WordParagraphPropertiesEnums wordParagraphPropertiesEnum = null;
+        if( property ==null || "".equals(property)){
+            return null;
+        }
+        try {
+            // 将String转化为Enum
+            wordParagraphPropertiesEnum = WordParagraphPropertiesEnums.valueOf(property.toUpperCase());
+        }catch (IllegalArgumentException e){
+            e.printStackTrace();
+            return null;
+        }
+        switch (wordParagraphPropertiesEnum){
+            case ALIGNMENT: return paragraph.getAlignment().name();
+            default:;
+        }
+        return null;
+    }
+
+    /**
+     * 获取页面背景颜色
+     * 返回16进制颜色值
+     * @return String
+     */
+    public static String getBackgroundColor(){
+        CTDocument1 ctDocument1 = document.getDocument();
+        CTBackground background = ctDocument1.getBackground();
+        if (background == null){
+            return  null;
+        }
+        STHexColor stHexColor = background.xgetColor();
+        return stHexColor == null ? null : stHexColor.getStringValue();
+    }
+
+    /**
+     * 获取背影填充效果属性
+     * @return NameNodeMap
+     */
+    public static NamedNodeMap getBackgroundFillAttributes(){
+        CTDocument1 document = WordUtils.document.getDocument();
+        CTBackground background = document.getBackground();
+        if (background == null){
+            return  null;
+        }
+        //通过 xpath选取v:fill节点
+        XmlObject[] xmlObjects = background.selectPath("declare namespace v='urn:schemas-microsoft-com:vml' " + ".//v:fill");
+        if( xmlObjects.length == 0){
+            return null;
+        }
+        // 获取节点属性
+        NamedNodeMap attributes = xmlObjects[0].getDomNode().getAttributes();
+        return attributes;
+    }
+
+    /**
+     * 获取背景-填充效果-纹理
+     * @return String
+     */
+    public  static String getBackgroundFillTile(){
+        NamedNodeMap attributes = getBackgroundFillAttributes();
+        if (attributes == null){
+            return null;
+        }
+        String type = attributes.getNamedItem("type").getNodeValue();
+        //判断填充效果是否为纹理
+        if (!"tile".equals(type)){
+            return null;
+        }
+        // 获取填充效果纹理名称
+        String nodeValue = attributes.getNamedItem("o:title").getNodeValue();
+        return nodeValue;
+    }
+
+    /**
+     * 获取背景-填充效果-图案
+     * @return String
+     */
+    public static String getBackgroundFillPattern(){
+        NamedNodeMap attributes = getBackgroundFillAttributes();
+        if (attributes == null){
+            return null;
+        }
+        String type = attributes.getNamedItem("type").getNodeValue();
+        //判断填充效果是否为图案
+        if (!"pattern".equals(type)){
+            return null;
+        }
+        // 获取填充效果图案名称
+        String nodeValue = attributes.getNamedItem("o:title").getNodeValue();
+
+        return nodeValue;
+    }
+
+
+    /**
+     * 检测背景颜色是否一致
+     * @param color 背景16进制颜色
+     * @return boolean
+     */
+    public static boolean checkBackgroundColor(String color){
+        if(StringUtils.isEmpty(color)){
+            return false;
+        }
+        return color.equals(getBackgroundColor()) ? true:false;
+    }
+
+
+    /**
+     * 检查背景是否正确
+     * @param property 背景的属性
+     * @param value 背景属性的值
+     * @return
+     */
+    public static boolean checkBackground(String property, String value){
+        WordBackgroundPropertiesEnums wordBackgroundPropertiesEnums = null;
+        if( property ==null || "".equals(property)){
+            return false;
+        }
+        try {
+              // 将String转化为Enum
+              wordBackgroundPropertiesEnums = WordBackgroundPropertiesEnums.valueOf(property.toUpperCase());
+        }catch (IllegalArgumentException e){
+            e.printStackTrace();
+            return false;
+        }
+        // 属性检查
+        switch (wordBackgroundPropertiesEnums){
+            case BACKGROUND_COLOR:
+                break;
+        }
+        return false;
+    }
 }
+

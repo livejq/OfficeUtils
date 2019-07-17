@@ -1,17 +1,76 @@
 package com.gzmut.office.util;
 
+import com.gzmut.office.enums.word.WordBackgroundPropertiesEnums;
+import org.apache.poi.ss.usermodel.Color;
 import org.apache.poi.xwpf.usermodel.*;
-import org.junit.Test;
+import org.apache.xmlbeans.SimpleValue;
+import org.apache.xmlbeans.XmlObject;
 
+import org.junit.Test;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBackground;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDocument1;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+
+import javax.xml.namespace.QName;
 import java.util.List;
 
 import static org.junit.Assert.*;
 
 public class WordUtilsTest {
+
+    @Test
+    public void getWordParagraphProperties(){
+        WordUtils.setDocment("F:\\KSWJJ\\15000001\\WORD1.docx");
+        XWPFDocument document = WordUtils.document;
+        XWPFParagraph paragraph = WordUtils.getParagraph("调查表明京沪");
+        System.out.println(WordUtils.getParagraphProperties(paragraph,"alignment"));
+
+    }
+
+    @Test
+    public void getWordBackgroundFillTest(){
+        WordUtils.setDocment("F:\\KSWJJ\\15000001\\WORD1.docx");
+        // 获取背景填充纹理
+        String backgroundFillTile = WordUtils.getBackgroundFillTile();
+        System.out.println(backgroundFillTile);
+        // 获取背景填充图案
+        String backgroundFillPattern = WordUtils.getBackgroundFillPattern();
+        System.out.println(backgroundFillPattern);
+    }
+
+    @Test
+    public void Test1(){
+        WordUtils.setDocment("F:\\KSWJJ\\15000001\\WORD1.docx");
+        XWPFDocument document = WordUtils.document;
+//      System.out.println(document.getDocument().getBackground());
+//      System.out.println(WordUtils.getBackgroundColor());
+        CTBackground background = document.getDocument().getBackground();
+        System.out.println(background);
+        XmlObject[] xmlObjects = background.selectPath("declare namespace v='urn:schemas-microsoft-com:vml' " + ".//v:fill");
+        NamedNodeMap attributes = xmlObjects[0].getDomNode().getAttributes();
+        System.out.println(attributes.getNamedItem("type").getNodeValue());
+//        System.out.println(attributes.getNamedItem("o:title").getNodeValue());
+//        System.out.println(xmlObjects[0].getDomNode().getNodeName());
+//        System.out.println(background.selectChildren(new QName("urn:schemas-microsoft-com:vml", "fill", "v")).length);
+//        System.out.println(background.selectPath("declare namespace v='urn:schemas-microsoft-com:vml' " + ".//v:fill").length);
+//        System.out.println(background.getDomNode().getFirstChild().getNamespaceURI());
+//        System.out.println(background.getDomNode().getFirstChild().getNodeName());
+
+
+        // 根据关键字获取段落
+//        XWPFParagraph paragraph = WordUtils.getParagraph("调查还发现");
+//        paragraph.getRuns().forEach(xwpfRun -> System.out.println(xwpfRun.getText(0)));
+//        WordBackgroundPropertiesEnums background_color = WordBackgroundPropertiesEnums.valueOf("ackground_color".toUpperCase());
+
+
+
+    }
+
     @Test
     public void Test(){
-        WordUtils wordUtils = new WordUtils();
-        XWPFDocument document = wordUtils.getXWPDocument("F:\\KSWJJ\\15000001\\WORD1.docx");
+
+        XWPFDocument document = WordUtils.getDocument("F:\\KSWJJ\\15000001\\WORD1.docx");
        // List<String> strings = WordUtils.readWordFile("E:\\Desktop\\java判断word文档字体.docx");
         //strings.forEach(string->System.out.println(string));
 
@@ -98,4 +157,6 @@ public class WordUtilsTest {
 //        document.getAllPackagePictures();
 
     }
+
+
 }

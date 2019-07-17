@@ -12,7 +12,7 @@ public class MainTest {
     public static void main(String[] args){
         WordUtils wu = new WordUtils();
 
-        wu.getXWPDocument("F:\\new\\请柬1.docx");
+        wu.getDocument("F:\\new\\请柬1.docx");
 
         System.out.println(wu.checkAllText("王选"));
         System.out.println(wu.checkAllText("2013"));
