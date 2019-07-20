@@ -18,7 +18,9 @@ import org.w3c.dom.NamedNodeMap;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.gzmut.office.enums.word.WordBackgroundPropertiesEnums.*;
 
@@ -31,6 +33,8 @@ public class WordUtils {
 
     /** word文档的文档文件名*/
     public static  String FILE_NAME="";
+    /** 考试文件夹**/
+    public static String examDir = "";
     /** word文档 XWPFPDocumet类*/
     public static  XWPFDocument document;
 
@@ -170,51 +174,6 @@ public class WordUtils {
     }
 
     /**
-     * 全文范围内搜索，如果存在返回true
-     * @param text 要搜索的字符串
-     * @return 正确或错误信息
-     */
-    public static String checkAllText(String text){
-
-        if(document == null){
-            System.out.println("document为空");
-            return  null;
-        }
-        List<XWPFParagraph> list = document.getParagraphs();
-        for(XWPFParagraph para : list){
-            String t = para.getText();
-            if(t.contains(text)){
-                return "true";
-            }
-        }
-        return "false:文档不存在文本"+text;
-    }
-
-
-    /**
-     * @return
-     */
-    public String checkDiffFont(){
-        List<XWPFParagraph> list = document.getParagraphs();
-        String fName = "";
-        List<XWPFRun> runs = list.get(0).getRuns();
-        for(XWPFRun r : runs){
-            fName = r.getFontName();
-        }
-        for(XWPFParagraph para : list) {
-            runs = para.getRuns();
-            for(XWPFRun r : runs){
-                if(!fName.equals(r.getFontName())) {
-                    return "true";
-                }
-            }
-
-        }
-        return "false:字体相同";
-    }
-
-
-    /**
      * 通过字符串获取段落
      * @param s 所在段落的字符串
      * @return XWPFParagraph word 段落对象
@@ -237,7 +196,6 @@ public class WordUtils {
     public static XWPFRun getRun(XWPFParagraph paragraph, String s){
         return paragraph.getRuns().stream().filter(xwpfRun -> xwpfRun.getText(0).contains(s)).findFirst().get();
     }
-
 
     /**
      * 获取段落属性
@@ -338,7 +296,6 @@ public class WordUtils {
         return nodeValue;
     }
 
-
     /**
      * 检测背景颜色是否一致
      * @param color 背景16进制颜色
@@ -350,7 +307,6 @@ public class WordUtils {
         }
         return color.equals(getBackgroundColor()) ? true:false;
     }
-
 
     /**
      * 检查背景是否正确
@@ -374,8 +330,70 @@ public class WordUtils {
         switch (wordBackgroundPropertiesEnums){
             case BACKGROUND_COLOR:
                 break;
+            default:
         }
         return false;
+    }
+
+    /**
+     * 全文范围内搜索，如果存在返回true
+     * @param text 要搜索的字符串
+     * @return 正确或错误信息
+     */
+    public static String checkAllText(String text){
+
+        if(document == null){
+            System.out.println("document为空");
+            return  null;
+        }
+        List<XWPFParagraph> list = document.getParagraphs();
+        for(XWPFParagraph para : list){
+            String t = para.getText();
+            if(t.contains(text)){
+                return "true";
+            }
+        }
+        return "false:文档不存在文本"+text;
+    }
+
+    /**
+     * @return
+     */
+    public String checkDiffFont(){
+        List<XWPFParagraph> list = document.getParagraphs();
+        String fName = "";
+        List<XWPFRun> runs = list.get(0).getRuns();
+        for(XWPFRun r : runs){
+            fName = r.getFontName();
+        }
+        for(XWPFParagraph para : list) {
+            runs = para.getRuns();
+            for(XWPFRun r : runs){
+                if(!fName.equals(r.getFontName())) {
+                    return "true";
+                }
+            }
+
+        }
+        return "false:字体相同";
+    }
+
+    /**
+     * 判断文件是否存在
+     * 需要参数 fileName
+     * @param param 判断参数
+     * @return boolean
+     */
+    public static Map<String,Object> checkFileIsExist(int score, Map<String, Object> param){
+        Map<String, Object> infoMap = new HashMap<>(2);
+        if (new File(examDir+File.separator+param.get("fileName").toString()).exists()){
+            infoMap.put("score",score);
+            infoMap.put("msg","答题正确");
+        }else {
+            infoMap.put("score",0);
+            infoMap.put("msg","文件不存在");
+        }
+        return infoMap;
     }
 }
 
