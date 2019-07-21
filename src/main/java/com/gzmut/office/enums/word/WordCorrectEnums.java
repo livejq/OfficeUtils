@@ -8,8 +8,9 @@ package com.gzmut.office.enums.word;
 public enum WordCorrectEnums {
 
     /** 判断文件是否存在*/
-    CHECK_FILE_IS_EXIST(1,"checkFileIsExist");
-
+    CHECK_FILE_IS_EXIST(1,"checkFileIsExist"),
+    /** 检查页面属性*/
+    CHECK_PAGE(2,"checkPage");
 
     /* 属性id**/
     private Integer id;

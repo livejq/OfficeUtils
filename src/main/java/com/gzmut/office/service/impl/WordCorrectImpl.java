@@ -8,8 +8,10 @@ import com.gzmut.office.bean.CheckBean;
 import com.gzmut.office.enums.word.WordCorrectEnums;
 import com.gzmut.office.service.WordCorrect;
 import com.gzmut.office.util.WordUtils;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,6 +23,7 @@ import java.util.Map;
  * @author MXDC
  * @date 2019/7/16
  **/
+@Slf4j
 public class WordCorrectImpl implements WordCorrect {
 
 
@@ -54,12 +57,18 @@ public class WordCorrectImpl implements WordCorrect {
      */
     @Override
     public List<Map<String, Object>> correctItem(File file, String rule) {
+        try {
+            WordUtils.setDocment(file.getCanonicalPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error("文档读取错误");
+        }
         // correctInfo 小题判题结果信息
         List<Map<String, Object>> correctInfo = new LinkedList<>();
         // 1.解析判题规则
         JSONArray jsonArray = JSON.parseArray(rule);
         List<CheckBean> checkBeanList = JSONObject.parseArray(jsonArray.toJSONString(), CheckBean.class);
-        checkBeanList.forEach(checkBean ->correctInfo.add(correctParam(file, checkBean)));
+        checkBeanList.forEach(checkBean ->correctInfo.add(correctParam(checkBean)));
         // 2.获取判题枚举类
         // 3.判题并返回判题信息
         return correctInfo;
@@ -67,11 +76,10 @@ public class WordCorrectImpl implements WordCorrect {
 
     /**
      * 根据ckeckBean 按得分点(参数)给小题判分
-     * @param file 操作文档
      * @param checkBean 评分规则
      * @return Map<String, Object></> 判题结果
      */
-    public Map<String, Object> correctParam(File file, CheckBean checkBean){
+    public Map<String, Object> correctParam(CheckBean checkBean){
         // 判题规则枚举类名称
         String knowledge;
         // 定位信息
@@ -87,6 +95,8 @@ public class WordCorrectImpl implements WordCorrect {
         switch (wordCorrectEnums){
             case CHECK_FILE_IS_EXIST:
                 return WordUtils.checkFileIsExist(score,param);
+            case CHECK_PAGE:
+                return WordUtils.checkPage(score,param);
             default:
         }
         return null;

@@ -1,6 +1,7 @@
 package com.gzmut.office.util;
 
 import com.gzmut.office.enums.word.WordBackgroundPropertiesEnums;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Color;
 import org.apache.poi.xwpf.usermodel.*;
 import org.apache.xmlbeans.SimpleValue;
@@ -9,14 +10,17 @@ import org.apache.xmlbeans.XmlObject;
 import org.junit.Test;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBackground;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDocument1;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import javax.xml.namespace.QName;
 import java.util.List;
+import java.util.Scanner;
 
 import static org.junit.Assert.*;
 
+@Slf4j
 public class WordUtilsTest {
 
     @Test
@@ -158,5 +162,20 @@ public class WordUtilsTest {
 
     }
 
+    @Test
+    public void pageSize(){
+        WordUtils.setDocment("F:\\KSWJJ\\15000001\\WORD1.docx");
+        XWPFDocument document = WordUtils.document;
+        CTDocument1 document1 = document.getDocument();
+        CTSectPr sectPr = document1.getBody().getSectPr();
+        org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageSz pgSz = sectPr.getPgSz();
+        System.out.println(pgSz);
+        System.out.println(pgSz.getW());
+        System.out.println(pgSz.getH());
+    }
 
+    @Test
+    public void checkPageSize() {
+        System.out.println("\\n");
+    }
 }

@@ -3,7 +3,11 @@ package com.gzmut.office.util;
 import com.beust.jcommander.internal.Lists;
 import com.google.common.base.CharMatcher;
 import com.gzmut.office.enums.word.WordBackgroundPropertiesEnums;
+import com.gzmut.office.enums.word.WordCorrectEnums;
+import com.gzmut.office.enums.word.WordPagePropertiesEnums;
 import com.gzmut.office.enums.word.WordParagraphPropertiesEnums;
+import com.gzmut.office.service.WordCorrect;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;
@@ -13,22 +17,26 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.xmlbeans.XmlObject;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBackground;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDocument1;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageSz;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STHexColor;
 import org.w3c.dom.NamedNodeMap;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static com.gzmut.office.enums.word.WordBackgroundPropertiesEnums.*;
+import static com.gzmut.office.enums.word.WordCorrectEnums.CHECK_PAGE;
 
 /**
  * Word文档的工具类
  * @author MXDC
  * @date 2019/7/9
  **/
+@Slf4j
 public class WordUtils {
 
     /** word文档的文档文件名*/
@@ -382,7 +390,7 @@ public class WordUtils {
      * 判断文件是否存在
      * 需要参数 fileName
      * @param param 判断参数
-     * @return boolean
+     * @return Map<Stirng,Object> 判题信息
      */
     public static Map<String,Object> checkFileIsExist(int score, Map<String, Object> param){
         Map<String, Object> infoMap = new HashMap<>(2);
@@ -394,6 +402,57 @@ public class WordUtils {
             infoMap.put("msg","文件不存在");
         }
         return infoMap;
+    }
+
+    /**
+     * 检查页面大小
+     * @param pageSize 页面大小 参数格式 ：w:h
+     * @return
+     */
+    public static boolean checkPageSize(String pageSize){
+        if (StringUtils.isEmpty(pageSize)){
+            return false;
+        }
+        pageSize = pageSize.trim();
+        String w = StringUtils.substringBefore(pageSize,":");
+        String h = StringUtils.substringAfter(pageSize,":");
+        CTDocument1 document = WordUtils.document.getDocument();
+        CTPageSz pgSz = document.getBody().getSectPr().getPgSz();
+        if ( w.equals(pgSz.getW().toString()) && h.equals(pgSz.getH().toString())){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 检查页面参数
+     * @param score 分数值
+     * @param param 参数
+     * @return Map<Stirng,Object> 判题信息
+     */
+    public static Map<String,Object> checkPage(int score, Map<String, Object> param){
+        Map<String, Object> infoMap = new HashMap<>(2);
+        StringBuffer msg = new StringBuffer();
+        int setpScore =  score/param.size();
+        int tatalScore = 0;
+        for (String key: param.keySet()) {
+            WordPagePropertiesEnums pagePropertiesEnums = WordPagePropertiesEnums.valueOf(key);
+            switch (pagePropertiesEnums){
+                case PAGE_SIZE:
+                    if (checkPageSize(param.get(key).toString())){
+                        tatalScore += setpScore;
+                        msg.append("页面大小正确;");
+                    }else {
+                        msg.append("页面大小错误;");
+                    }
+                    break;
+                default:
+            }
+        }
+        infoMap.put("score",tatalScore);
+        infoMap.put("msg",msg.toString());
+        log.info(infoMap.toString());
+        return  infoMap;
     }
 }
 
