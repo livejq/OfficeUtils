@@ -10,6 +10,7 @@ import org.apache.xmlbeans.XmlObject;
 import org.junit.Test;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBackground;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDocument1;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageMar;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -175,7 +176,24 @@ public class WordUtilsTest {
     }
 
     @Test
-    public void checkPageSize() {
-        System.out.println("\\n");
+   public void pageMargin(){
+       WordUtils.setDocment("F:\\KSWJJ\\15000001\\WORD1.docx");
+       XWPFDocument document = WordUtils.document;
+       CTDocument1 document1 = document.getDocument();
+       CTPageMar pgMar = document1.getBody().getSectPr().getPgMar();
+       System.out.println(pgMar.getBottom().toString());
+       System.out.println(pgMar.getTop());
+       System.out.println(pgMar.getLeft());
+       System.out.println(pgMar.getRight());
+        System.out.println(pgMar.getHeader());
+        System.out.println(pgMar.getFooter());
+
+
     }
+
+   @Test
+   public void haeder(){
+
+
+   }
 }

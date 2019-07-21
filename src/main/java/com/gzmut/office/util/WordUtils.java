@@ -1,5 +1,6 @@
 package com.gzmut.office.util;
 
+import com.alibaba.fastjson.JSONObject;
 import com.beust.jcommander.internal.Lists;
 import com.google.common.base.CharMatcher;
 import com.gzmut.office.enums.word.WordBackgroundPropertiesEnums;
@@ -15,13 +16,11 @@ import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.xmlbeans.XmlObject;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBackground;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDocument1;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageSz;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.STHexColor;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 import org.w3c.dom.NamedNodeMap;
 
 import java.io.*;
+
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,6 +45,9 @@ public class WordUtils {
     /** word文档 XWPFPDocumet类*/
     public static  XWPFDocument document;
 
+    public static final String DOC_SUFFIX = ".doc";
+
+    public static final String DOCX_SUFFIX = ".docx";
     /**
      * 给单前工具类设置一个word文档
      * @param fileName word文档 全路径名
@@ -61,16 +63,13 @@ public class WordUtils {
         try {
             stream = new FileInputStream(new File(fileName));
             //word为2003，进行转换
-            if (fileName.endsWith(".doc")){
+            if (fileName.endsWith(DOC_SUFFIX)){
                 //进行转换
                 //document=;
-            } else if (fileName.endsWith(".docx")){
-                // System.out.println(fileName);
+            } else if (fileName.endsWith(DOCX_SUFFIX)){
                 document = new XWPFDocument(stream);
             } else {
-//                LOGGER.debug("此文件{}不是word文件", path);
-                //这里要给为logger
-                System.out.printf("此文件不是word文件");
+                log.error(fileName+"不是word文件");
             }
         }catch (IOException e) {
             e.printStackTrace();
@@ -80,8 +79,7 @@ public class WordUtils {
                     stream.close();
                 } catch (IOException e) {
                     e.printStackTrace();
-//                    LOGGER.debug("读取word文件失败");
-                    System.out.printf("读取word文件失败");
+                    log.error("读取word文件失败");
                 }
             }
         }
@@ -106,16 +104,13 @@ public class WordUtils {
         try {
             stream = new FileInputStream(new File(fileName));
             //word为2003，进行转换
-            if (fileName.endsWith(".doc")){
+            if (fileName.endsWith(DOC_SUFFIX)){
                 //进行转换
                 //document=;
-            } else if (fileName.endsWith(".docx")){
-                // System.out.println(fileName);
+            } else if (fileName.endsWith(DOCX_SUFFIX)){
                 document = new XWPFDocument(stream);
             } else {
-//                LOGGER.debug("此文件{}不是word文件", path);
-                //这里要给为logger
-                System.out.printf("此文件不是word文件");
+                log.error(fileName+"不是word文件");
             }
         }catch (IOException e) {
             e.printStackTrace();
@@ -125,8 +120,7 @@ public class WordUtils {
                     stream.close();
                 } catch (IOException e) {
                     e.printStackTrace();
-//                    LOGGER.debug("读取word文件失败");
-                    System.out.printf("读取word文件失败");
+                    log.error("读取word文件失败");
                 }
             }
         }
@@ -148,22 +142,20 @@ public class WordUtils {
         InputStream stream = null;
         try {
             stream = new FileInputStream(new File(fileName));
-            if (fileName.endsWith(".doc")) {
+            if (fileName.endsWith(DOC_SUFFIX)) {
                 HWPFDocument document = new HWPFDocument(stream);
                 WordExtractor extractor = new WordExtractor(document);
                 String[] contextArray = extractor.getParagraphText();
                 Arrays.asList(contextArray).forEach(context -> contextList.add(CharMatcher.whitespace().removeFrom(context)));
                 extractor.close();
                 document.close();
-            } else if (fileName.endsWith(".docx")) {
+            } else if (fileName.endsWith(DOC_SUFFIX)) {
                 XWPFDocument document = new XWPFDocument(stream).getXWPFDocument();
                 List<XWPFParagraph> paragraphList = document.getParagraphs();
                 paragraphList.forEach(paragraph -> contextList.add(CharMatcher.whitespace().removeFrom(paragraph.getParagraphText())));
                 document.close();
             } else {
-//                LOGGER.debug("此文件{}不是word文件", path);
-                //这里要给为logger
-                System.out.printf("此文件不是word文件");
+                log.error(fileName+"不是word文件");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -173,8 +165,7 @@ public class WordUtils {
                     stream.close();
                 } catch (IOException e) {
                     e.printStackTrace();
-//                    LOGGER.debug("读取word文件失败");
-                    System.out.printf("读取word文件失败");
+                    log.error("读取word文件失败");
                 }
             }
         }
@@ -396,7 +387,7 @@ public class WordUtils {
         Map<String, Object> infoMap = new HashMap<>(2);
         if (new File(examDir+File.separator+param.get("fileName").toString()).exists()){
             infoMap.put("score",score);
-            infoMap.put("msg","答题正确");
+            infoMap.put("msg","文件存在,答题正确");
         }else {
             infoMap.put("score",0);
             infoMap.put("msg","文件不存在");
@@ -425,6 +416,48 @@ public class WordUtils {
     }
 
     /**
+     * 判断页边距是否正确
+     * 满足参数中的页边距都真确才得分
+     * @param param
+     *
+     * @return boolena
+     */
+    /**
+     *  判断页边距是否正确（包括页眉，页脚距边界）
+     * @param key 参数-键
+     * @param value 参数-值
+     * @return
+     */
+    public static boolean checkPageMargin(String key, Object value){
+        CTDocument1 document = WordUtils.document.getDocument();
+        CTPageMar pgMar = document.getBody().getSectPr().getPgMar();
+        long top = pgMar.getTop().longValue();
+        long bottom = pgMar.getBottom().longValue();
+        long right = pgMar.getRight().longValue();
+        long left = pgMar.getLeft().longValue();
+        long header = pgMar.getHeader().longValue();
+        long footer = pgMar.getFooter().longValue();
+        long val = Long.valueOf(value.toString());
+        WordPagePropertiesEnums wordPagePropertiesEnums = WordPagePropertiesEnums.valueOf(key);
+        switch (wordPagePropertiesEnums){
+            case PAGE_MARGIN_TOP:
+                return val == top ? true:false;
+            case PAGE_MARGIN_BOTTOM:
+               return val == bottom ? true : false;
+            case PAGE_MARGIN_RIGHT:
+                return val == right ? true : false;
+            case PAGE_MARGIN_LEFT:
+                return val == left ? true : false;
+            case PAGE_MARGIN_HEADER:
+                return val == header ? true : false;
+            case PAGE_MARGIN_FOOTER:
+                return val == footer ? true : false;
+            default:
+        }
+        return true;
+    }
+
+    /**
      * 检查页面参数
      * @param score 分数值
      * @param param 参数
@@ -444,6 +477,19 @@ public class WordUtils {
                         msg.append("页面大小正确;");
                     }else {
                         msg.append("页面大小错误;");
+                    }
+                    break;
+                case PAGE_MARGIN_TOP:
+                case PAGE_MARGIN_BOTTOM:
+                case PAGE_MARGIN_LEFT:
+                case PAGE_MARGIN_RIGHT:
+                case PAGE_MARGIN_HEADER:
+                case PAGE_MARGIN_FOOTER:
+                    if (checkPageMargin(key, param.get(key))) {
+                        tatalScore += setpScore;
+                        msg.append(pagePropertiesEnums.getProperty()+"正确;");
+                    } else {
+                        msg.append(pagePropertiesEnums.getProperty()+"不正确;");
                     }
                     break;
                 default:

@@ -3,7 +3,6 @@ package com.gzmut.office.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.google.gson.JsonObject;
 import com.gzmut.office.bean.CheckBean;
 import com.gzmut.office.enums.word.WordCorrectEnums;
 import com.gzmut.office.service.WordCorrect;

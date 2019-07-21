@@ -8,9 +8,21 @@ package com.gzmut.office.enums.word;
 public enum WordPagePropertiesEnums {
 
     /** 页面大小*/
-   PAGE_SIZE(1,"pageSize"),
+    PAGE_SIZE(1,"页面大小"),
     /** 页面方向*/
-    PAGA_ORI(2,"page");
+    PAGA_ORIENT(2,"页面方向"),
+    /** 上页边距*/
+    PAGE_MARGIN_TOP(3,"上页边距"),
+    /** 下页边距*/
+    PAGE_MARGIN_BOTTOM(4,"下页边距"),
+    /** 左页边距*/
+    PAGE_MARGIN_LEFT(5,"左页边距"),
+    /** 右页边距*/
+    PAGE_MARGIN_RIGHT(6,"右页边距"),
+    /** 页眉距边界*/
+    PAGE_MARGIN_HEADER(7,"页眉距边界"),
+    /** 页脚距边界*/
+    PAGE_MARGIN_FOOTER(8,"页脚距边界");
 
 
 
