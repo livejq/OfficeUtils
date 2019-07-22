@@ -3,18 +3,14 @@ package com.gzmut.office.util;
 import com.alibaba.fastjson.JSONObject;
 import com.beust.jcommander.internal.Lists;
 import com.google.common.base.CharMatcher;
-import com.gzmut.office.enums.word.WordBackgroundPropertiesEnums;
-import com.gzmut.office.enums.word.WordCorrectEnums;
-import com.gzmut.office.enums.word.WordPagePropertiesEnums;
-import com.gzmut.office.enums.word.WordParagraphPropertiesEnums;
+import com.gzmut.office.enums.word.*;
 import com.gzmut.office.service.WordCorrect;
 import lombok.extern.slf4j.Slf4j;
+import opennlp.tools.util.wordvector.WordVectorTable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.apache.poi.xwpf.usermodel.*;
 import org.apache.xmlbeans.XmlObject;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 import org.w3c.dom.NamedNodeMap;
@@ -499,6 +495,30 @@ public class WordUtils {
         infoMap.put("msg",msg.toString());
         log.info(infoMap.toString());
         return  infoMap;
+    }
+
+    public static boolean checkTableProperties(String key, int value){
+        List<XWPFTable> tables = WordUtils.document.getTables();
+        XWPFTable table = tables.get(0);
+        int result = 0;
+        WordTablePropertiesEnums enums = WordTablePropertiesEnums.valueOf(key);
+        switch(enums){
+            case TABLE_WIDTH:
+                List<XWPFTableCell> cells = table.getRow(0).getTableCells();
+                for(XWPFTableCell cell : cells){
+                    result += cell.getWidth();
+                }
+                return GeneralUtils.approach(result, value);
+            case TABLE_HEIGHT:
+                List<XWPFTableRow> rows = table.getRows();
+                for(XWPFTableRow row : rows){
+                    result += row.getHeight();
+                }
+                return GeneralUtils.approach(result, value);
+            default:
+                return false;
+        }
+
     }
 }
 
