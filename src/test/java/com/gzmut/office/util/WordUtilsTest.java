@@ -2,20 +2,21 @@ package com.gzmut.office.util;
 
 import com.gzmut.office.enums.word.WordBackgroundPropertiesEnums;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ooxml.POIXMLDocumentPart;
 import org.apache.poi.ss.usermodel.Color;
+import org.apache.poi.ss.usermodel.Header;
 import org.apache.poi.xwpf.usermodel.*;
 import org.apache.xmlbeans.SimpleValue;
+import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 
 import org.junit.Test;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBackground;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDocument1;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageMar;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import javax.xml.namespace.QName;
+import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -188,11 +189,40 @@ public class WordUtilsTest {
         System.out.println(pgMar.getHeader());
         System.out.println(pgMar.getFooter());
 
-
     }
 
    @Test
    public void haeder(){
+
+       WordUtils.setDocment("E:\\Desktop\\aaa.docx");
+       XWPFDocument document = WordUtils.document;
+       // 获取页眉引用列表
+       CTSectPr sectPr = document.getDocument().getBody().getSectPr();
+       List<CTHdrFtrRef> list = sectPr.getHeaderReferenceList();
+       for (CTHdrFtrRef f:list
+       ) {
+           // 获取页眉类型 default first even
+           System.out.println(f.getType()+":"+f.getId());
+       }
+       // 获取页眉列表
+       List<XWPFHeader> headers = document.getHeaderList();
+       // 根据引用id,获取引用目标
+//       POIXMLDocumentPart rId6 = document.getRelationById("rId6");
+//       System.out.println(rId6.getParent());
+       // 获取引用id
+//       System.out.println(document.getRelationId(rId6));
+
+       for (XWPFHeader header:headers
+            ) {
+
+           POIXMLDocumentPart part = header.getPart();
+           System.out.println(document.getRelationId(part));
+           System.out.println(header);
+       }
+
+
+
+
 
 
    }

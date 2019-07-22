@@ -96,6 +96,7 @@ public class WordCorrectImpl implements WordCorrect {
                 return WordUtils.checkFileIsExist(score,param);
             case CHECK_PAGE:
                 return WordUtils.checkPage(score,param);
+
             default:
         }
         return null;
