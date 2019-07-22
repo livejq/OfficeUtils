@@ -1,81 +1,39 @@
 package com.gzmut.office.enums.ppt;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 /**
- * 封装目标对象
+ * 获取演示文稿中的元素
  * @author livejq
  * @date 2019/7/13
  **/
-public enum PptTargetEnums {
-    /*
-     *
-     * 根据id获取目标对象名称
-     * 获取幻灯片
-     **/
-    SLIDE(1, "slide"),
+@Getter
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public enum PPtTargetEnums {
 
-    /*
-     *
-     * 根据id获取目标对象名称
-     * 获取文本框
-     **/
-    TEXT_BOX(2, "text_box"),
+    /** 幻灯片 **/
+    SLIDE(1, "幻灯片"),
 
-    /*
-     *
-     * 根据id获取目标对象名称
-     * 获取图片
-     **/
-    PICTURE(3, "picture"),
+    /** 文本框 **/
+    TEXT_BOX(2, "文本框"),
 
-    /*
-     *
-     * 根据id获取目标对象名称
-     * 获取表格
-     **/
-    TABLE(4, "table"),
+    /** 图片 **/
+    PICTURE(3, "图片"),
 
-    /*
-     *
-     * 根据id获取目标对象名称
-     * 获取SmartArt
-     **/
-    SMART_ART(5, "smart_art"),
+    /** 表格 **/
+    TABLE(4, "表格"),
 
-    /*
-     *
-     * 根据id获取目标对象名称
-     * 获取声音
-     **/
-    SOUND(6, "sound"),
+    /** SmartArt **/
+    SMART_ART(5, "SmartArt图形"),
 
-    /*
-     *
-     * 根据id获取目标对象名称
-     * 获取视频
-     **/
-    VIDEO(7, "video");
+    /** 声音 **/
+    SOUND(6, "声音"),
 
-    private Integer id;
-    private String target;
+    /** 视频 **/
+    VIDEO(7, "视频");
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getTarget() {
-        return target;
-    }
-
-    public void setTarget(String target) {
-        this.target = target;
-    }
-
-    PptTargetEnums(Integer id, String target) {
-        this.id = id;
-        this.target = target;
-    }
+    private final Integer id;
+    private final String target;
 }

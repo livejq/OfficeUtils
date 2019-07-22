@@ -6,9 +6,9 @@ import org.junit.Test;
  * @author livejq
  * @date 2019/7/13
  **/
-public class PptUtilsTest {
+public class PPtUtilsTest {
     @Test
     public void demo01() {
-        System.out.println(PptUtils.getSlideFillColor(PptUtils.getXMLSlideShow("temp/demo01.pptx").getSlides().get(0)).getRed());
+        System.out.println(PPtUtils.getXMLSlideShow("temp/demo01.pptx").getSlides().size());
     }
 }

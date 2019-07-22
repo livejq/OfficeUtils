@@ -1,62 +1,30 @@
 package com.gzmut.office.enums.ppt;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 /**
- * 封装图片属性
+ * 根据id获取图片属性
  * @author livejq
  * @date 2019/7/13
  **/
-public enum PptPicturePropertiesEnums {
+@Getter
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public enum PPtPicturePropertiesEnums {
 
-    /*
-     *
-     * 根据id获取图片属性
-     * 尺寸
-     **/
+    /** 尺寸 **/
     SIZE(1, "尺寸"),
 
-    /*
-     *
-     * 根据id获取图片属性
-     * 超链接
-     **/
+    /** 超链接 **/
     HYPERLINK(2, "超链接"),
 
-    /*
-     *
-     * 根据id获取图片属性
-     * 类型
-     **/
+    /** 类型 **/
     CONTENT_TYPE(3, "类型"),
 
-    /*
-     *
-     * 根据id获取图片属性
-     * 后缀
-     **/
+    /** 后缀 **/
     EXTENSION(4, "后缀");
 
-
-    private Integer id;
-    private String property;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getProperty() {
-        return property;
-    }
-
-    public void setProperty(String property) {
-        this.property = property;
-    }
-
-    PptPicturePropertiesEnums(Integer id, String property) {
-        this.id = id;
-        this.property = property;
-    }
+    private final Integer id;
+    private final String property;
 }
