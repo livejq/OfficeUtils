@@ -128,7 +128,7 @@ public class WordUtils {
      * @param fileName
      * @param <T>
      * @return
-     */
+
     public static <T> List<String> readWordFile(String fileName) {
         // 文件名为空或者null,返回null
         if (fileName == null || "".equals(fileName)){
@@ -166,7 +166,7 @@ public class WordUtils {
             }
         }
         return contextList;
-    }
+    }*/
 
     /**
      * 通过字符串获取段落
