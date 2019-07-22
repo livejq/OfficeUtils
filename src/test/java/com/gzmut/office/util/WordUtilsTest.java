@@ -1,16 +1,19 @@
 package com.gzmut.office.util;
 
 import com.gzmut.office.enums.word.WordBackgroundPropertiesEnums;
+import com.microsoft.schemas.vml.CTShape;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ooxml.POIXMLDocumentPart;
 import org.apache.poi.ss.usermodel.Color;
 import org.apache.poi.ss.usermodel.Header;
 import org.apache.poi.xwpf.usermodel.*;
 import org.apache.xmlbeans.SimpleValue;
+import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 
 import org.junit.Test;
+import org.openxmlformats.schemas.drawingml.x2006.wordprocessingDrawing.CTInline;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -19,6 +22,7 @@ import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
@@ -194,16 +198,15 @@ public class WordUtilsTest {
    @Test
    public void haeder(){
 
-       WordUtils.setDocment("E:\\Desktop\\aaa.docx");
+       WordUtils.setDocment("C:\\KSWJJ\\65910001\\参考答案\\Word.docx");
        XWPFDocument document = WordUtils.document;
        // 获取页眉引用列表
        CTSectPr sectPr = document.getDocument().getBody().getSectPr();
        List<CTHdrFtrRef> list = sectPr.getHeaderReferenceList();
-       for (CTHdrFtrRef f:list
-       ) {
-           // 获取页眉类型 default first even
-           System.out.println(f.getType()+":"+f.getId());
-       }
+       // 回去页眉为 default的引用id
+       CTHdrFtrRef df = list.stream().filter(f -> f.getType().toString().equals("default")).findFirst().get();
+//       System.out.println(df.getId());
+
        // 获取页眉列表
        List<XWPFHeader> headers = document.getHeaderList();
        // 根据引用id,获取引用目标
@@ -212,18 +215,77 @@ public class WordUtilsTest {
        // 获取引用id
 //       System.out.println(document.getRelationId(rId6));
 
-       for (XWPFHeader header:headers
+       XWPFHeader defaultHeader = headers.stream().filter(xwpfHeader -> document.getRelationId(xwpfHeader.getPart()).equals(df.getId())).findFirst().get();
+       XWPFPictureData xwpfPictureData = defaultHeader.getAllPictures().get(0);
+       String fileName = xwpfPictureData.getFileName();
+//       System.out.println(xwpfPictureData.toString());
+//       System.out.println(fileName);
+       List<XWPFParagraph> paragraphs = defaultHeader.getParagraphs();
+       List<XWPFRun> runs = paragraphs.get(0).getRuns();
+       for (XWPFRun r:runs
             ) {
+           List<CTDrawing> drawingList = r.getCTR().getDrawingList();
+           drawingList.forEach(d->d.getInlineList().forEach(l->
+           {
+               XmlObject[] xmlObjects = l.getGraphic().selectPath("declare namespace pic='http://schemas.openxmlformats.org/drawingml/2006/picture' " + ".//pic:nvPicPr");
+               NamedNodeMap attributes = xmlObjects[0].getDomNode().getAttributes();
+               System.out.println(attributes.item(0));
 
-           POIXMLDocumentPart part = header.getPart();
-           System.out.println(document.getRelationId(part));
-           System.out.println(header);
+           }));
        }
-
-
-
-
+//       System.out.println(defaultHeader._getHdrFtr());
+       List<XWPFPictureData> allPictures = document.getAllPackagePictures();
+       for (XWPFPictureData p: allPictures
+            ) {
+           System.out.println(p.getFileName());
+       }
+//       for (XWPFHeader header:headers
+//            ) {
+//
+//           POIXMLDocumentPart part = header.getPart();
+//           System.out.println(document.getRelationId(part));
+//           System.out.println(header._getHdrFtr());
+//           List<XWPFPictureData> allPictures = header.getAllPictures();
+//           System.out.println(allPictures.get(0).getFileName());
+//           XWPFPictureData xwpfPictureData = header.getAllPackagePictures().get(0);
+//           System.out.println(xwpfPictureData.getFileName());
+//           List<XWPFParagraph> paragraphs = header.getParagraphs();
+//           List<XWPFRun> runs = paragraphs.get(0).getRuns();
+//           for (XWPFRun r: runs
+//                ) {
+//               CTR ctr = r.getCTR();
+//               List<CTDrawing> drawingList = ctr.getDrawingList();
+//               CTDrawing ctDrawing = drawingList.get(0);
+//               System.out.println(ctDrawing);
+//           }
+//       }
+       
 
 
    }
+
+    @Test
+   public void tableTest(){
+        WordUtils.setDocment("E:\\Desktop\\office\\office二级新题(34套)\\26套\\Word素材.docx");
+        XWPFDocument document = WordUtils.document;
+        List<XWPFTable> tables = document.getTables();
+        long width = 0;
+        XWPFTable xwpfTable = tables.get(0);
+//        xwpfTable.getRow(0).getTableCells().stream().reduce((a,b)->{a.getWidth()});
+        for (XWPFTable table : tables) {
+            XWPFTableRow row = table.getRow(1);
+            for (XWPFTableCell c : row.getTableCells()) {
+//                System.out.println(c.getWidth());
+                width += c.getWidth();
+            }
+        }
+
+        System.out.println(width);
+        CTDocument1 document1 = WordUtils.document.getDocument();
+        CTPageSz pgSz = document1.getBody().getSectPr().getPgSz();
+        System.out.println(pgSz.getW());
+        long w = pgSz.getW().longValue();
+        long l = w - width;
+        System.out.println(l);
+    }
 }
