@@ -8,7 +8,7 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 public class WordUtilsTest {
-    @Test
+    /*@Test
     public void Test(){
         WordUtils wordUtils = new WordUtils();
         XWPFDocument document = wordUtils.getXWPDocument("F:\\KSWJJ\\15000001\\WORD1.docx");
@@ -39,7 +39,7 @@ public class WordUtilsTest {
         System.out.print(xwpfParagraph.getAlignment().getValue());
         xwpfParagraph.getVerticalAlignment();
 
-        /**
+        *//**
          * 首行缩进
          * Specifies the additional indentation which shall be applied to the first
          * line of the parent paragraph. This additional indentation is specified
@@ -54,7 +54,7 @@ public class WordUtilsTest {
          * assumed to be zero (if needed).
          *
          * @return indentation or null if indentation is not set
-         */
+         *//*
         System.out.print( xwpfParagraph.getFirstLineIndent());
         //缩进
         xwpfParagraph.getIndentationLeft();
@@ -97,5 +97,5 @@ public class WordUtilsTest {
         );
 //        document.getAllPackagePictures();
 
-    }
+    }*/
 }

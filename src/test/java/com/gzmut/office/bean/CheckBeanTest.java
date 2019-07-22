@@ -1,15 +1,9 @@
 package com.gzmut.office.bean;
 
-import com.alibaba.fastjson.JSONObject;
-import com.google.gson.JsonObject;
-import com.uwyn.jhighlight.fastutil.Hash;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.Assert.*;
 
 public class CheckBeanTest {
     @Test
@@ -20,8 +14,8 @@ public class CheckBeanTest {
         location.setLp("sheet1");
         location.setLs("A1");
         checkBean.setLocation(location);
-        Map<String,Object> param = new HashMap();
-        param.put("loction",location);
+        Map<String,Object> param = new HashMap<String,Object>();
+        param.put("location",location);
         param.put("q",2);
         param.put("b",2);
         param.put("c",2);

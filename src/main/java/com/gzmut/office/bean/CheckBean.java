@@ -7,13 +7,13 @@ import java.util.Map;
  * @date 2019/7/10
  **/
 public class CheckBean{
-    /** 规则编号*/
+    /** 规则编号 **/
     public String knowledge;
-    /** 定位对象*/
+    /** 定位对象 **/
     public Location location;
-    /** 参数集合*/
+    /** 参数集合 **/
     public Map<String ,Object> param;
-    /** 得分*/
+    /** 得分 **/
     public int score;
 
     public Map<String, Object> getParam() {
@@ -47,10 +47,13 @@ public class CheckBean{
      * 定位成员变量 lp,ls,lg,lr
      * 在excel中，lp定位表，ls在lp的基础上定位单元格
      * 在word中，lp定位段落，ls定位字符串；
-     * 在ppt中，lp定位幻灯片页，ls定位对象（如幻灯片、文本框等），lg定位段落，lr定位某串字符
+     * 在ppt中，lp定位幻灯片页码，ls 定位元素位置（所有对象解析后根据在幻灯片中的位置会被存入一个数组中），
+     * lo定位元素（如幻灯片、文本框等），lg定位段落，lr定位某串字符
      */
     static class Location {
-        public String lp,ls,lg,lr;
+         /** 定位属性 **/
+        public String lp,ls,lo,lg,lr;
+
         public String getLp() {
             return lp;
         }
@@ -62,6 +65,12 @@ public class CheckBean{
         }
         public void setLs(String ls) {
             this.ls = ls;
+        }
+        public String getLo() {
+            return lo;
+        }
+        public void setLo(String lo) {
+            this.lo = lo;
         }
         public String getLg() {
             return lg;

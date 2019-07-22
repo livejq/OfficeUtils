@@ -16,24 +16,27 @@ import java.text.DecimalFormat;
  * @author livejq
  * @date 2019/7/13
  **/
-public class PptUtils {
+public class PPtUtils {
+
+    public static final String PPT = ".pptx";
+    public static final String PPTX = ".ppt";
 
     /**
-     * 获取ppt演示文档对象实例
-     * @param fileName ppt演示文档文件路径
+     * 获取PPt演示文档对象实例
+     * @param fileName PPt演示文档文件路径
      * @return org.apache.poi.xslf.usermodel.XMLSlideShow
      **/
     public static XMLSlideShow getXMLSlideShow(String fileName) {
 
-        if(fileName == null || fileName.equals("")) {
+        if(fileName == null || fileName.length() == 0) {
             return null;
         }
-        if(!fileName.endsWith(".ppt") || !fileName.endsWith(".pptx")) {
+        if(!fileName.endsWith(PPTX) && !fileName.endsWith(PPT)) {
             // 最好抛出异常提示信息
             return null;
         }
         XMLSlideShow slideShow = null;
-        // 读取ppt演示文档
+        // 读取PPt演示文档
         try {
             slideShow = new XMLSlideShow(new FileInputStream(fileName));
         } catch (IOException e) {
@@ -45,7 +48,7 @@ public class PptUtils {
 
     /**
      * 获取幻灯片总数
-     * @param slideShow ppt演示文档对象
+     * @param slideShow PPt演示文档对象
      * @return int
      */
     public static int getSlidesSum(XMLSlideShow slideShow) {
@@ -53,8 +56,8 @@ public class PptUtils {
     }
 
     /**
-     * 获取ppt演示文档中的幻灯片尺寸
-     * @param slideShow ppt演示文档对象
+     * 获取PPt演示文档中的幻灯片尺寸
+     * @param slideShow PPt演示文档对象
      * @return java.awt.Dimension
      **/
     public static Dimension getSlideSize(XMLSlideShow slideShow) {

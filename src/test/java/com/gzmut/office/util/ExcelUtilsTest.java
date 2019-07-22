@@ -25,7 +25,7 @@ import java.util.Set;
 import static org.junit.Assert.*;
 
 public class ExcelUtilsTest {
-    @Test
+    /*@Test
     public void test() throws IOException {
 //        FileInputStream fisSource = new FileInputStream(new File("E:\\Desktop\\计算机设备全年销量统计表.xlsx"));
 //        XSSFWorkbook xssfWorkbook = new XSSFWorkbook(fisSource);
@@ -55,5 +55,5 @@ public class ExcelUtilsTest {
 
         Map<Integer, Map<Integer, String>> regionCellValue = ExcelUtils.getRegionCellValue("销售情况", a1);
         System.out.println(regionCellValue.toString());
-    }
+    }*/
 }
