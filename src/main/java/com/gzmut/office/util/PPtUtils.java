@@ -1,5 +1,6 @@
 package com.gzmut.office.util;
 
+import com.gzmut.office.enums.OfficeEnum;
 import org.apache.poi.xslf.usermodel.SlideLayout;
 import org.apache.poi.xslf.usermodel.XMLSlideShow;
 import org.apache.poi.xslf.usermodel.XSLFSlide;
@@ -18,9 +19,6 @@ import java.text.DecimalFormat;
  **/
 public class PPtUtils {
 
-    public static final String PPT = ".pptx";
-    public static final String PPTX = ".ppt";
-
     /**
      * 获取PPt演示文档对象实例
      * @param fileName PPt演示文档文件路径
@@ -31,7 +29,7 @@ public class PPtUtils {
         if(fileName == null || fileName.length() == 0) {
             return null;
         }
-        if(!fileName.endsWith(PPTX) && !fileName.endsWith(PPT)) {
+        if(!fileName.endsWith(OfficeEnum.PPT.name()) && !fileName.endsWith(OfficeEnum.PPTX.name())) {
             // 最好抛出异常提示信息
             return null;
         }
