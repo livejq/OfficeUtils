@@ -13,9 +13,11 @@ public class CheckBeanTest {
         CheckBean.Location location = new CheckBean.Location();
         location.setLp("sheet1");
         location.setLs("A1");
+
         checkBean.setLocation(location);
-        Map<String,Object> param = new HashMap<String,Object>();
-        param.put("location",location);
+        //checkBean.setLocation(location);
+        Map<String,Object> param = new HashMap();
+        param.put("loction",location);
         param.put("q",2);
         param.put("b",2);
         param.put("c",2);

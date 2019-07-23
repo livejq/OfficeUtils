@@ -1,47 +1,37 @@
 package com.gzmut.office.util;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFDateUtil;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.ss.util.CellAddress;
+import org.apache.poi.openxml4j.opc.PackagePart;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.DecimalFormat;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * excel工具类
  * @author MXDC
  * @date 2019/7/10
- **/
+ */
 public class ExcelUtils {
     /** 文件名称*/
-    private static  String FILENAME="";
+    private  String FILENAME="";
     /** XSSFWorkbook工作簿对象*/
-    private static XSSFWorkbook workBook;
+    private XSSFWorkbook workBook;
 
-    /** 返回一個工作簿對象*/
-    public static XSSFWorkbook getWorkBook() {
+    /** 放回一個工作簿對象*/
+    public XSSFWorkbook getWorkBook() {
         return workBook;
     }
 
     /**
-     * 設置一個当前操作的工作簿
+     * 設置一個工作簿
      * @param fileName 工作簿的絕對地址
      */
-    public static void setWorkbook(String fileName) {
+    public void setWorkbook(String fileName) {
         FILENAME = fileName;
         // 判断字符串是否为空
         if (FILENAME==null || "".equals(FILENAME)){
@@ -58,7 +48,8 @@ public class ExcelUtils {
                 workBook = new XSSFWorkbook(stream);
             } else {
                 // LOGGER.debug("此文件{}不是word文件", path);
-                System.out.printf("此文件不是word文件");
+                // 这里要logger
+                System.out.printf("此文件不是Excel文件");
             }
         }catch (IOException e) {
             e.printStackTrace();
@@ -75,12 +66,14 @@ public class ExcelUtils {
         }
         return ;
     }
+
+
     /**
-     * 判断表名是否存在
+     * 判断是表名是否存在
      * @param sheetName
      * @return
      */
-    public static boolean checkSheetName(String sheetName){
+    public boolean checkSheetName(String sheetName){
         // 判断workbook是否为空
         if (workBook == null){
             return false;
@@ -89,103 +82,37 @@ public class ExcelUtils {
         return  workBook.getSheet(sheetName) == null ? false : true;
     }
 
-    /**
-     * 获取一个单元格或区域的值
-     * @param sheetName 表名
-     * @param cellRangeAddress 一个单元格或访问 eg A1 | A2:C3
-     * @return
-     */
-    public static Map<Integer, Map<Integer,String>> getRegionCellValue(String sheetName,CellRangeAddress cellRangeAddress){
+    public Map<String, Map<String,String>> getCellValue(String sheetName,CellRangeAddress cellRangeAddress){
         // 判断workbook,sheetName,cellRangeAddress是否为空
         if (workBook == null || sheetName == null || "".equals(sheetName) || cellRangeAddress == null){
-            System.out.println("工作簿，表名或地址域为空");
             return null;
         }
         //获取表
         XSSFSheet sheet = workBook.getSheet(sheetName);
         if ( sheet == null){
-            System.out.println("表格为空");
             return null;
         }
-        // cellMap用于存放某个单元格或某个区域的值
-        Map<Integer,Map<Integer,String>> cellMap = new HashMap<Integer,Map<Integer,String>>();
-        // 遍历地址，取出单元格的值存放在map中
-        int firstRow = cellRangeAddress.getFirstRow();
-        int lastRow = cellRangeAddress.getLastRow();
-        int firstColumn = cellRangeAddress.getFirstColumn();
-        int lastColumn = cellRangeAddress.getLastColumn();
-        for(int i = firstColumn; i <= lastRow; i++){
-            Map colMap = new HashMap<Integer,String>();
-            for (int j = firstColumn; j <= lastColumn ; j++) {
-                colMap.put(j,getCellValueAsString(getCell(sheet,new CellAddress(i,j))));
-            }
-            cellMap.put(i,colMap);
-        }
-        return cellMap;
+
+        return null;
     }
 
     /**
-     * 获取单元格各类型值，返回字符串类型
-     * @param cell excel 单元格
-     * @return java.lang.String
+     *返回单元格内容
+     * @param sheetname 表名
+     * @param cell 单元格
+     * @return 返回单元格内容
      */
-    public static String getCellValueAsString(Cell cell){
-        // 判断是否为null或空串
-        if (cell==null || "".equals(cell.toString().trim())) {
-            return "";
+    public String getCellValue (String sheetname,String cell){//A3
+        // 判断workbook是否为空
+        if (workBook == null){
+            return "ERROR,WorkBook为空";
         }
-        String cellValue = "";
-        // 获取单元格类型名称
-        CellType cellType = cell.getCellType();
-        switch (cellType){
-            case STRING :
-                cellValue= cell.getStringCellValue().trim();
-                cellValue= StringUtils.isEmpty(cellValue) ? "" : cellValue;
-                break;
-            case BOOLEAN:
-                cellValue = String.valueOf(cell.getBooleanCellValue());
-                break;
-            // 数值,日期,货币等也为数值
-            case NUMERIC:
-                if (HSSFDateUtil.isCellDateFormatted(cell)) {
-                    cellValue =    String.valueOf(cell.getDateCellValue());
-                } else {
-                    cellValue = new DecimalFormat("#.######").format(cell.getNumericCellValue());
-                }
-                break;
-            case ERROR:
-                break;
-            // 未知类型
-            case _NONE:
-                break;
-            // 公式
-            case FORMULA:
-                break;
-            // 空白
-            case BLANK:
-                break;
-            default:
-                cellValue = "";
-                break;
-        }
-        return cellValue;
+        return workBook.getSheet(sheetname).getRow(getrow(cell)-1).getCell(getcolumn(cell)-1).getStringCellValue();
     }
 
-    /**
-     * 根据一个地址返回一个单元格
-     * @param sheet 一个excel表格
-     * @param cellAddress 一个单元格地址
-     * @return org.apache.poi.ss.usermodel.Cell
-     */
-    public static Cell getCell(XSSFSheet sheet, CellAddress cellAddress){
-        if (sheet == null || cellAddress == null){
-            return null;
-        }
-        return  sheet.getRow(cellAddress.getRow()).getCell(cellAddress.getColumn());
-    }
 
     /**
-     * 获取单元格字号
+     *返回字号
      * @param sheetname 表名
      * @param cell 单元格
      * @return 返回字号
@@ -198,7 +125,7 @@ public class ExcelUtils {
     }
 
     /**
-     * 获取字体
+     *返回字体
      * @param sheetname 表名
      * @param cell 单元格
      * @return 返回字体
@@ -208,24 +135,224 @@ public class ExcelUtils {
     }
 
     /**
-     * 获取字体颜色
+     *返回字体颜色
      * @param sheetname 表名
      * @param cell 单元格
      * @return 返回字体颜色
      */
-    public String getCellFontColor(String sheetname,String cell){
-
-        return rgbToString((workBook.getSheet(sheetname).getRow(getrow(cell)-1).getCell(getcolumn(cell)-1).getCellStyle().getFont().getXSSFColor().getRGB()));
+    public byte[] getCellFontColor(String sheetname,String cell){
+        return workBook.getSheet(sheetname).getRow(getrow(cell)-1).getCell(getcolumn(cell)-1).getCellStyle().getFont().getXSSFColor().getRGB();
     }
 
+    /**
+     *返回单元格是否合并
+     * @param sheetname 表名
+     * @param cell 单元格
+     * @return 返回单元格是否合并
+     */
+    public boolean isCellMerge(String sheetname,String cell){
+        XSSFSheet sheet = workBook.getSheet(sheetname);
+        int sheetMergeCount = sheet.getNumMergedRegions();
 
+        int row = getrow(cell)-1;
+        int column = getcolumn(cell)-1;
+        //System.out.println("Check,"+row+","+column+",合并的单元格数:"+sheetMergeCount);
+        boolean result = false;
 
-
-
+        for (int i = 0; i < sheetMergeCount; i++) {
+            CellRangeAddress range = sheet.getMergedRegion(i);
+            int firstColumn = range.getFirstColumn();
+            int lastColumn = range.getLastColumn();
+            int firstRow = range.getFirstRow();
+            int lastRow = range.getLastRow();
+            //System.out.println("result:"+result+","+firstRow+","+lastRow+","+firstColumn+","+lastColumn);//上，下，左，右
+            if(row >= firstRow && row <= lastRow){
+                if(column >= firstColumn && column <= lastColumn){
+                    result |= true;
+                }
+            } else {
+                result |= false;
+            }
+        }
+        return result;
+    }
 
     /**
      *
-     * @param cell 把cell（A3）转化为(1 3)
+     * @param sheetname 表名
+     * @param cell 单元格
+     * @return 返回簇状图????????????????????????????????????????????????????????????????????
+     */
+    public boolean getChart(String sheetname,String cell){
+        return false;
+    }
+
+    /**
+     *返回单元格数值格式
+     * @param sheetname 表名
+     * @param cell 单元格
+     * @return 返回单元格数值格式
+     */
+    public String getFormat(String sheetname,String cell){
+        return workBook.getSheet(sheetname).getRow(getrow(cell)-1).getCell(getcolumn(cell)-1).getCellStyle().getDataFormatString();
+    }
+
+    /**
+     *返回单元格公式
+     * @param sheetname 表名
+     * @param cell 单元格
+     * @return 返回单元格公式
+     */
+    public String getCellFormula(String sheetname,String cell){
+        return workBook.getSheet(sheetname).getRow(getrow(cell)-1).getCell(getcolumn(cell)-1).getCellFormula();
+    }
+
+    /**
+     *返回单元格名称
+     * @param sheetname 表名
+     * @param value 单元格名称
+     * @return 返回单元格名称
+     */
+    public boolean getCellName(String sheetname,String value){
+        try {
+            String sheetname1 = workBook.getSheet(workBook.getName(value).getSheetName()).getSheetName();
+            if(sheetname.equals(sheetname1)){
+                return true;
+            }
+            else {
+                return false;
+            }
+        }catch(Exception ex){
+            return false;
+        }
+    }
+
+    /**
+     *返回对齐方式
+     * @param sheetname 表名
+     * @param cell 单元格
+     * @return 返回对齐方式
+     */
+    public String getCellAlignment(String sheetname,String cell){
+        return workBook.getSheet(sheetname).getRow(getrow(cell)-1).getCell(getcolumn(cell)-1).getCellStyle().getAlignment().name();
+    }
+
+    /**
+     *返回是否存在数据透视表
+     * @param sheetname 表名
+     * @return 返回是否存在数据透视表
+     */
+    public boolean isPivotTable(String sheetname){
+        try{
+            for(XSSFPivotTable xssfPivotTable :workBook.getSheet(sheetname).getPivotTables()){
+                return true;
+            }}catch (Exception e){
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     *返回是否存在边框线(上下左右)
+     * @param sheetname 表名
+     * @return 返回是否存在边框线
+     */
+    public boolean isBorderLineBottom(String sheetname,String cell){
+        try{
+            short sBut = workBook.getSheet(sheetname).getRow(getrow(cell)-1).getCell(getcolumn(cell)-1).getCellStyle().getBorderBottom().getCode();
+            //System.out.println("sBut="+sBut);
+            if(sBut>0) {
+                return true;
+            } else {
+                return false;
+            }
+        }catch (Exception e){
+            return false;
+        }
+    }
+    public boolean isBorderLineLeft(String sheetname,String cell){
+        try{
+            short sLut = workBook.getSheet(sheetname).getRow(getrow(cell)-1).getCell(getcolumn(cell)-1).getCellStyle().getBorderLeft().getCode();
+            //System.out.println("sLut="+sLut);
+            if(sLut>0) {
+                return true;
+            } else {
+                return false;
+            }
+        }catch (Exception e){
+            return false;
+        }
+    }
+    public boolean isBorderLineRight(String sheetname,String cell){
+        try{
+            short sRut = workBook.getSheet(sheetname).getRow(getrow(cell)-1).getCell(getcolumn(cell)-1).getCellStyle().getBorderRight().getCode();
+            //System.out.println("sRut="+sRut);
+            if(sRut>0) {
+                return true;
+            } else {
+                return false;
+            }
+        }catch (Exception e){
+            return false;
+        }
+    }
+    public boolean isBorderLineTop(String sheetname,String cell){
+        try{
+            short sTut = workBook.getSheet(sheetname).getRow(getrow(cell)-1).getCell(getcolumn(cell)-1).getCellStyle().getBorderTop().getCode();
+            //System.out.println("sTut="+sTut);
+            if(sTut>0) {
+                return true;
+            } else {
+                return false;
+            }
+        }catch (Exception e){
+            return false;
+        }
+    }
+
+    /**
+     *返回行高
+     * @param sheetname 表名
+     * @param cell 单元格
+     * @return 返回行高,不是1/20！！！！！
+     */
+    public short getCellHeight(String sheetname,String cell){
+        return  workBook.getSheet(sheetname).getRow(getrow(cell)-1).getHeight();
+    }
+
+    /**
+     *返回列宽，是1/256个字符宽度//in units of 1/256th of a character width )
+     * @param sheetname 表名
+     * @param cell 单元格
+     * @return 返回列宽,是1/256个字符宽度//in units of 1/256th of a character width )
+     */
+    public int getCellWidth(String sheetname,String cell){
+        return  workBook.getSheet(sheetname).getColumnWidth(getcolumn(cell)-1);
+    }
+
+    /**
+     *返回List<String>,例如"A3:B6"->"A3","A4","A5","A6","B3","B4","B5","B6";
+     * @param cellsarea 单元格区域
+     * @return 返回List<String>,例如"A3:B6"->"A3","A4","A5","A6","B3","B4","B5","B6";
+     *
+     * */
+    public List<String> getCellsList(String cellsarea){
+        String top = cellsarea.substring(0, cellsarea.indexOf(":"));
+        String buttom = cellsarea.substring(cellsarea.indexOf(":")+1,cellsarea.length());
+        CellRangeAddress cellAddresses = new CellRangeAddress( getrow(top),getrow(buttom),getcolumn(top),getcolumn(buttom));
+        List<String> listcells = new ArrayList<String>();
+        for(int i=getrow(top);i<=getrow(buttom);i++){
+            for(int j = (getcolumn(top)-1);j<=(getcolumn(buttom)-1);j++){
+                char letter = (char)((int)'A'+j);
+                listcells.add(letter+""+i);
+            }
+        }
+        return listcells;
+    }
+
+    /**
+     *把cell（A3）转化为(13)
+     * @param cell 把cell（A3）转化为(13)
      * @return
      */
     public static int getcolumn(String cell){//cell="AC5"
