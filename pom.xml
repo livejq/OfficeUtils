@@ -86,6 +86,7 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.3</version>
         </dependency>
+    </dependencies>
     <!--<build>
         <plugins>
             &lt;!&ndash; 打包jar文件时，配置manifest文件，加入lib包的jar依赖 &ndash;&gt;

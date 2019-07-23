@@ -109,8 +109,7 @@ public class WordUtilsTest {
 //                THAI_DISTRIBUTE(10);
         System.out.print(xwpfParagraph.getAlignment().getValue());
         xwpfParagraph.getVerticalAlignment();
-
-        *//**
+        /*
          * 首行缩进
          * Specifies the additional indentation which shall be applied to the first
          * line of the parent paragraph. This additional indentation is specified
@@ -125,7 +124,7 @@ public class WordUtilsTest {
          * assumed to be zero (if needed).
          *
          * @return indentation or null if indentation is not set
-         *//*
+         */
         System.out.print( xwpfParagraph.getFirstLineIndent());
         //缩进
         xwpfParagraph.getIndentationLeft();
@@ -168,7 +167,7 @@ public class WordUtilsTest {
         );
 //        document.getAllPackagePictures();
 
-    }*/
+    }
 
     @Test
     public void pageSize(){
@@ -229,9 +228,11 @@ public class WordUtilsTest {
            List<CTDrawing> drawingList = r.getCTR().getDrawingList();
            drawingList.forEach(d->d.getInlineList().forEach(l->
            {
-               XmlObject[] xmlObjects = l.getGraphic().selectPath("declare namespace pic='http://schemas.openxmlformats.org/drawingml/2006/picture' " + ".//pic:nvPicPr");
+//               System.out.println(l.getGraphic());
+//               XmlObject[] xmlObjects = background.selectPath("declare namespace v='urn:schemas-microsoft-com:vml' " + ".//v:fill");
+               XmlObject[] xmlObjects = l.getGraphic().selectPath("declare namespace pic='http://schemas.openxmlformats.org/drawingml/2006/picture' " + ".//pic:cNvPr");
                NamedNodeMap attributes = xmlObjects[0].getDomNode().getAttributes();
-               System.out.println(attributes.item(0));
+               System.out.println(attributes.getNamedItem("name").getNodeValue());
 
            }));
        }
@@ -261,7 +262,6 @@ public class WordUtilsTest {
 //               System.out.println(ctDrawing);
 //           }
 //       }
-       
 
 
    }

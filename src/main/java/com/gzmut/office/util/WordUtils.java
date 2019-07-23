@@ -12,16 +12,14 @@ import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.xwpf.usermodel.*;
 import org.apache.xmlbeans.XmlObject;
+import org.openxmlformats.schemas.drawingml.x2006.wordprocessingDrawing.CTInline;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 import org.w3c.dom.NamedNodeMap;
 
 import java.io.*;
 
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.gzmut.office.enums.word.WordBackgroundPropertiesEnums.*;
 import static com.gzmut.office.enums.word.WordCorrectEnums.CHECK_PAGE;
@@ -292,6 +290,26 @@ public class WordUtils {
     }
 
     /**
+     * 检查是否存在图片
+     * @param paragraph
+     * @return
+     */
+    public static boolean checkPictureIsExist(XWPFParagraph paragraph, String name){
+        List<XWPFRun> runs = paragraph.getRuns();
+        for (XWPFRun r:runs
+        ) {
+            List<CTDrawing> drawingList = r.getCTR().getDrawingList();
+            for (CTDrawing d : drawingList) {
+                for (CTInline l : d.getInlineList()) {
+                    XmlObject[] xmlObjects = l.getGraphic().selectPath("declare namespace pic='http://schemas.openxmlformats.org/drawingml/2006/picture' " + ".//pic:cNvPr");
+                    NamedNodeMap attributes = xmlObjects[0].getDomNode().getAttributes();
+                   return name.equals(attributes.getNamedItem("name").getNodeValue());
+                }
+            }
+        }
+        return false;
+    }
+    /**
      * 检测背景颜色是否一致
      * @param color 背景16进制颜色
      * @return boolean
@@ -368,7 +386,6 @@ public class WordUtils {
                     return "true";
                 }
             }
-
         }
         return "false:字体相同";
     }
