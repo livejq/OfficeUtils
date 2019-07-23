@@ -12,9 +12,9 @@ public enum WordCellPropertiesEnums {
 
 
 
-    /* 属性id**/
+    /* 属性id*/
     private Integer id;
-    /* 属性名称**/
+    /* 属性名称*/
     private String property;
 
     public Integer getId() {

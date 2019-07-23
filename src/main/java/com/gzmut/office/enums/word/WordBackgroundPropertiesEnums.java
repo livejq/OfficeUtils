@@ -4,7 +4,7 @@ package com.gzmut.office.enums.word;
  * 背景属性
  * @author MXDC
  * @date 2019/7/16
- **/
+ */
 public enum  WordBackgroundPropertiesEnums {
 
     /** 背景颜色*/
@@ -17,9 +17,9 @@ public enum  WordBackgroundPropertiesEnums {
     BACKGROUND_FILL_PATTERN(4,"background_fill_pattern");
 
     /** 背景填充效果--图片*/
-    /* 属性id**/
+    /* 属性id*/
     private Integer id;
-    /* 属性名称**/
+    /* 属性名称*/
     private String property;
 
     public Integer getId() {

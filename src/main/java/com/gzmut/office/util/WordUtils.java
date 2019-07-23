@@ -28,13 +28,13 @@ import static com.gzmut.office.enums.word.WordCorrectEnums.CHECK_PAGE;
  * Word文档的工具类
  * @author MXDC
  * @date 2019/7/9
- **/
+ */
 @Slf4j
 public class WordUtils {
 
     /** word文档的文档文件名*/
     public static  String FILE_NAME="";
-    /** 考试文件夹**/
+    /** 考试文件夹*/
     public static String examDir = "";
     /** word文档 XWPFPDocumet类*/
     public static  XWPFDocument document;

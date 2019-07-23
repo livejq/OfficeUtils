@@ -8,7 +8,7 @@ import java.util.Map;
  * word判题器接口
  * @author MXDC
  * @date 2019/7/16
- **/
+ */
 public interface WordCorrect {
     /**
      * 根据小题，判分

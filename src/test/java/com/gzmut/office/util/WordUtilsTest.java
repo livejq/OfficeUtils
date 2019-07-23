@@ -109,6 +109,10 @@ public class WordUtilsTest {
 //                THAI_DISTRIBUTE(10);
         System.out.print(xwpfParagraph.getAlignment().getValue());
         xwpfParagraph.getVerticalAlignment();
+<<<<<<< HEAD
+
+=======
+>>>>>>> f434fc6a54d3ee8f0f272ec0c7153b854d81a451
         /*
          * 首行缩进
          * Specifies the additional indentation which shall be applied to the first

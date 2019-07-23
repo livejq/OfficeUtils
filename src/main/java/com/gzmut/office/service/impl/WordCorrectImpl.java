@@ -21,7 +21,7 @@ import java.util.Map;
  * 使用判题器类时要，初始化考试文件夹 examDir字段
  * @author MXDC
  * @date 2019/7/16
- **/
+ */
 @Slf4j
 public class WordCorrectImpl implements WordCorrect {
 

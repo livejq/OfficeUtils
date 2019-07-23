@@ -4,7 +4,7 @@ package com.gzmut.office.enums.word;
  * 段落属性
  * @author MXDC
  * @date 2019/7/17
- **/
+ */
 public enum  WordParagraphPropertiesEnums {
 
     /** 对齐方式*/
@@ -13,9 +13,9 @@ public enum  WordParagraphPropertiesEnums {
     INDENTATION(2,"indentation");
 
 
-    /* 属性id**/
+    /* 属性id*/
     private Integer id;
-    /* 属性名称**/
+    /* 属性名称*/
     private String property;
 
     public Integer getId() {

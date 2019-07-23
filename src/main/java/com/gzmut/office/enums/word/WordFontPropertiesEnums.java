@@ -4,7 +4,7 @@ package com.gzmut.office.enums.word;
  * 封装word字体属性
  * @author MXDC
  * @date 2019/7/16
- **/
+ */
 public enum  WordFontPropertiesEnums {
 
     /**
@@ -17,9 +17,9 @@ public enum  WordFontPropertiesEnums {
 
 
 
-    /* 属性id**/
+    /* 属性id*/
     private Integer id;
-    /* 属性名称**/
+    /* 属性名称*/
     private String property;
 
     public Integer getId() {
