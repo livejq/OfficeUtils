@@ -5,34 +5,37 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 获取演示文稿中的元素
+ * 获取演示文稿中的目标元素
  * @author livejq
- * @date 2019/7/13
+ * @since 2019/7/13
  */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public enum PPtTargetEnums {
 
     /** 幻灯片 */
-    SLIDE(1, "幻灯片"),
+    SLIDE(1, "SLIDE"),
 
     /** 文本框 */
-    TEXT_BOX(2, "文本框"),
+    TEXT_BOX(2, "TEXT_BOX"),
 
     /** 图片 */
-    PICTURE(3, "图片"),
+    PICTURE(3, "PICTURE"),
 
     /** 表格 */
-    TABLE(4, "表格"),
+    TABLE(4, "TABLE"),
 
     /** SmartArt */
-    SMART_ART(5, "SmartArt图形"),
+    SMART_ART(5, "SMART_ART"),
 
     /** 声音 */
-    SOUND(6, "声音"),
+    SOUND(6, "SOUND"),
 
     /** 视频 */
-    VIDEO(7, "视频");
+    VIDEO(7, "VIDEO"),
+
+    /** 图表 */
+    CHART(8, "CHART");
 
     private final Integer id;
     private final String target;

@@ -5,7 +5,7 @@ import org.junit.Test;
 
 /**
  * @author livejq
- * @date 2019/7/22
+ * @since 2019/7/22
  */
 public class EnumTest {
     @Test

@@ -7,11 +7,11 @@ import lombok.Getter;
 /**
  * office中的常用文件类型
  * @author livejq
- * @date 2019/7/22
+ * @since 2019/7/22
  */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public enum OfficeEnum {
+public enum OfficeEnums {
 
     /** Excel xls后缀 */
     XLS(1,".xls"),
