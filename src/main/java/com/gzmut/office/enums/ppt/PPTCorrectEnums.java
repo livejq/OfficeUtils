@@ -10,13 +10,13 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public enum PPtCorrectEnums {
+public enum PPTCorrectEnums {
 
     /** 检查文件是否存在 */
     CHECK_FILE_IS_EXISTS(1, "CHECK_FILE_IS_EXISTS", "检查文件是否存在"),
 
     /** 检查目标数量 */
-    CHECK_TARGET_NUMBER(2, "CHECK_TARGET_NUMBER", "检查目标数量"),
+    CHECK_SLIDE_NUMBER(2, "CHECK_SLIDE_NUMBER", "检查幻灯片数量"),
 
     /** 检查背景颜色 */
     CHECK_BACKGROUND_COLOR(3, "CHECK_BACKGROUND_COLOR", "检查背景颜色"),

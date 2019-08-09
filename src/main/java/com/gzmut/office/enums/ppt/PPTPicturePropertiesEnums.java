@@ -11,7 +11,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public enum PPtPicturePropertiesEnums {
+public enum PPTPicturePropertiesEnums {
 
     /** 尺寸 */
     SIZE(1, "SIZE"),

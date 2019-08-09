@@ -11,7 +11,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public enum PPtTargetEnums {
+public enum PPTTargetEnums {
 
     /** 幻灯片 */
     SLIDE(1, "SLIDE"),
@@ -35,7 +35,10 @@ public enum PPtTargetEnums {
     VIDEO(7, "VIDEO"),
 
     /** 图表 */
-    CHART(8, "CHART");
+    CHART(8, "CHART"),
+
+    /** 动画 */
+    ANIMATION(9, "ANIMATION");
 
     private final Integer id;
     private final String target;

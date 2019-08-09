@@ -1,6 +1,6 @@
 package com.gzmut.office.util;
 
-import com.gzmut.office.enums.ppt.PPtSlidePropertiesEnums;
+import com.gzmut.office.enums.ppt.PPTSlidePropertiesEnums;
 import org.junit.Test;
 
 /**
@@ -10,8 +10,8 @@ import org.junit.Test;
 public class EnumTest {
     @Test
     public void demo01() {
-        PPtSlidePropertiesEnums[] pspe = PPtSlidePropertiesEnums.values();
-        for(PPtSlidePropertiesEnums s : pspe) {
+        PPTSlidePropertiesEnums[] pspe = PPTSlidePropertiesEnums.values();
+        for(PPTSlidePropertiesEnums s : pspe) {
             System.out.println("输出 name：" + s.name());
         }
     }

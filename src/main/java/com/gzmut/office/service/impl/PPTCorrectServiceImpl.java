@@ -4,10 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.gzmut.office.bean.CheckBean;
 import com.gzmut.office.bean.CorrectInfo;
 import com.gzmut.office.bean.Location;
-import com.gzmut.office.enums.ppt.PPtCorrectEnums;
+import com.gzmut.office.enums.ppt.PPTCorrectEnums;
 import com.gzmut.office.service.ICorrect;
-import com.gzmut.office.util.PPtCheckUtils;
-import com.gzmut.office.util.PPtUtils;
+import com.gzmut.office.util.PPTCheckUtils;
+import com.gzmut.office.util.PPTUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -25,15 +26,15 @@ import java.util.*;
  * @since 2019/7/26
  */
 @Slf4j
-public class PPtCorrectServiceImpl implements ICorrect {
+public class PPTCorrectServiceImpl implements ICorrect {
 
     @Getter
     @Setter
     private String examDir;
 
-    private PPtUtils pptUtils = new PPtUtils();
+    private PPTUtils pptUtils = new PPTUtils();
 
-    private PPtCheckUtils pptCheckUtils = new PPtCheckUtils();
+    private PPTCheckUtils pptCheckUtils = new PPTCheckUtils();
 
     @Override
     public List<String> getCorrectJson(String num) {
@@ -43,8 +44,10 @@ public class PPtCorrectServiceImpl implements ICorrect {
     @Override
     public List<CorrectInfo> correct(List<String> correctJson) {
 
+        log.info(System.currentTimeMillis() + ":准备扫描考生文件...");
         List<CorrectInfo> correctInfoList = new LinkedList<>();
         int id = 1;
+        int index = 1;
         for (String jsonStr : correctJson) {
             List<Map<String, String>> correctInfo = correctItem(jsonStr);
             float stepScore = 0;
@@ -53,6 +56,7 @@ public class PPtCorrectServiceImpl implements ICorrect {
                 if (info != null) {
                     for (String key : info.keySet()) {
                         if (key.equals("score")) {
+                            System.out.println("规则 " + index++ + " 得分:" + Float.valueOf(info.get(key)));
                             stepScore += Float.valueOf(info.get(key));
                         } else if (key.equals("msg")) {
                             sb.append(info.get(key));
@@ -62,6 +66,8 @@ public class PPtCorrectServiceImpl implements ICorrect {
             }
             correctInfoList.add(statistics(id++, stepScore, sb.toString()));
         }
+        log.info(System.currentTimeMillis() + ":扫描完毕！" + System.lineSeparator());
+
         return correctInfoList;
     }
 
@@ -70,7 +76,8 @@ public class PPtCorrectServiceImpl implements ICorrect {
 
         List<Map<String, String>> correctInfo = new LinkedList<>();
         List<CheckBean> checkBeanList = JSON.parseArray(rule, CheckBean.class);
-        checkBeanList.forEach(checkBean -> correctInfo.add(correctKnowledge(checkBean)));
+        int sumRule = checkBeanList.size();
+        checkBeanList.forEach(checkBean -> correctInfo.add(correctKnowledge(checkBean, sumRule)));
 
         return correctInfo;
     }
@@ -85,7 +92,7 @@ public class PPtCorrectServiceImpl implements ICorrect {
         return info;
     }
 
-    private Map<String, String> correctKnowledge(CheckBean checkBean) {
+    private Map<String, String> correctKnowledge(CheckBean checkBean, int sumRule) {
 
         String baseFile = checkBean.getBaseFile();
         String fileName = examDir + File.separator + baseFile;
@@ -111,23 +118,23 @@ public class PPtCorrectServiceImpl implements ICorrect {
         Map<String, String> param = checkBean.getParam();
         Location location = checkBean.getLocation();
         String score = checkBean.getScore();
-        PPtCorrectEnums correctEnums = PPtCorrectEnums.valueOf(checkBean.getKnowledge());
+        PPTCorrectEnums correctEnums = PPTCorrectEnums.valueOf(checkBean.getKnowledge());
 
         switch (correctEnums) {
             case CHECK_FILE_IS_EXISTS:
                 return null;
-            case CHECK_TARGET_NUMBER:
-                return pptCheckUtils.checkTargetNumber(location, param, score);
+            case CHECK_SLIDE_NUMBER:
+                return pptCheckUtils.checkSlideNumber(location, param, score, sumRule);
             case CHECK_TEXT_BOX_CONTENT:
-                return null;
+                return pptCheckUtils.checkTextBoxContent(location, param, score, sumRule);
             case CHECK_TEXT_BOX_CONTENT_FORMAT:
-                return pptCheckUtils.checkTextBoxContentFormat(location, param, score);
+                return pptCheckUtils.checkTextBoxContentFormat(location, param, score, sumRule);
             case CHECK_BACKGROUND_COLOR:
-                return pptCheckUtils.checkBackgroundColor(location, param, score);
+                return pptCheckUtils.checkBackgroundColor(location, param, score, sumRule);
             case CHECK_PARAGRAPH_STYLE:
-                return pptCheckUtils.checkLayoutStyle(location, param, score);
-            case CHECK_LAYOUT_STYLE:
                 return null;
+            case CHECK_LAYOUT_STYLE:
+                return pptCheckUtils.checkLayoutStyle(location, param, score, sumRule);
             default:
         }
         return null;

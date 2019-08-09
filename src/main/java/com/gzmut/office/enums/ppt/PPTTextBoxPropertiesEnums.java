@@ -11,7 +11,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public enum PPtTextBoxPropertiesEnums {
+public enum PPTTextBoxPropertiesEnums {
 
     /** 填充颜色 */
     FILL_COLOR(1, "FILL_COLOR"),

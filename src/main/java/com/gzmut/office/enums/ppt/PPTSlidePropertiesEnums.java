@@ -14,7 +14,7 @@ import java.util.logging.Level;
  */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public enum PPtSlidePropertiesEnums {
+public enum PPTSlidePropertiesEnums {
 
     /** 背景颜色 */
     BACKGROUND_COLOR(1, "BACKGROUND_COLOR"),
@@ -34,7 +34,7 @@ public enum PPtSlidePropertiesEnums {
     /** 标题 */
     TITLE(6, "TITLE"),
 
-    /** 标题 */
+    /** 幻灯片数量 */
     COUNT(7, "COUNT");
 
     private final Integer id;

@@ -1,5 +1,6 @@
 package com.gzmut.office.service;
 
+import com.gzmut.office.bean.CheckBean;
 import com.gzmut.office.bean.CorrectInfo;
 
 import java.util.List;
