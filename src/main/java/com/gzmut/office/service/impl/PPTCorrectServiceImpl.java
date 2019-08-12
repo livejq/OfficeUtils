@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -47,16 +46,14 @@ public class PPTCorrectServiceImpl implements ICorrect {
         log.info(System.currentTimeMillis() + ":准备扫描考生文件...");
         List<CorrectInfo> correctInfoList = new LinkedList<>();
         int id = 1;
-        int index = 1;
+        float stepScore = 0;
         for (String jsonStr : correctJson) {
             List<Map<String, String>> correctInfo = correctItem(jsonStr);
-            float stepScore = 0;
             StringBuilder sb = new StringBuilder();
             for (Map<String, String> info : correctInfo) {
                 if (info != null) {
                     for (String key : info.keySet()) {
                         if (key.equals("score")) {
-                            System.out.println("规则 " + index++ + " 得分:" + Float.valueOf(info.get(key)));
                             stepScore += Float.valueOf(info.get(key));
                         } else if (key.equals("msg")) {
                             sb.append(info.get(key));
@@ -67,6 +64,7 @@ public class PPTCorrectServiceImpl implements ICorrect {
             correctInfoList.add(statistics(id++, stepScore, sb.toString()));
         }
         log.info(System.currentTimeMillis() + ":扫描完毕！" + System.lineSeparator());
+        log.info(System.currentTimeMillis() + "PPT答题总得分：" + stepScore + "分" + System.lineSeparator());
 
         return correctInfoList;
     }
@@ -115,20 +113,30 @@ public class PPTCorrectServiceImpl implements ICorrect {
                 pptCheckUtils.setPptUtils(pptUtils);
             }
         }
-        Map<String, String> param = checkBean.getParam();
+        Map<String, Object> param = checkBean.getParam();
         Location location = checkBean.getLocation();
         String score = checkBean.getScore();
         PPTCorrectEnums correctEnums = PPTCorrectEnums.valueOf(checkBean.getKnowledge());
 
         switch (correctEnums) {
-            case CHECK_FILE_IS_EXISTS:
-                return null;
+            case CHECK_SECTION:
+                return pptCheckUtils.checkSection(location, param, score, sumRule);
+            case CHECK_SLIDE_THEME:
+                return pptCheckUtils.checkSlideTheme(location, param, score, sumRule);
+            case CHECK_TEXT_HYPERLINK:
+                return pptCheckUtils.checkTextHyperlink(location, param, score, sumRule);
+            case CHECK_LAYOUT_NAME:
+                return pptCheckUtils.checkLayoutName(location, param, score, sumRule);
+            case CHECK_TEXT_LEVEL:
+                return pptCheckUtils.checkTextLevel(location, param, score, sumRule);
             case CHECK_SLIDE_NUMBER:
                 return pptCheckUtils.checkSlideNumber(location, param, score, sumRule);
             case CHECK_TEXT_BOX_CONTENT:
                 return pptCheckUtils.checkTextBoxContent(location, param, score, sumRule);
             case CHECK_TEXT_BOX_CONTENT_FORMAT:
                 return pptCheckUtils.checkTextBoxContentFormat(location, param, score, sumRule);
+            case CHECK_TEXT_ALIGN_STYLE:
+                return pptCheckUtils.checkTextAlignStyle(location, param, score, sumRule);
             case CHECK_BACKGROUND_COLOR:
                 return pptCheckUtils.checkBackgroundColor(location, param, score, sumRule);
             case CHECK_PARAGRAPH_STYLE:
@@ -137,6 +145,7 @@ public class PPTCorrectServiceImpl implements ICorrect {
                 return pptCheckUtils.checkLayoutStyle(location, param, score, sumRule);
             default:
         }
+
         return null;
     }
 }

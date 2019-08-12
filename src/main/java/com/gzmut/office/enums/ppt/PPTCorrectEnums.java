@@ -12,8 +12,8 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public enum PPTCorrectEnums {
 
-    /** 检查文件是否存在 */
-    CHECK_FILE_IS_EXISTS(1, "CHECK_FILE_IS_EXISTS", "检查文件是否存在"),
+    /** 检查幻灯片主题 */
+    CHECK_SLIDE_THEME(1,"CHECK_SLIDE_THEME", "检查幻灯片主题"),
 
     /** 检查目标数量 */
     CHECK_SLIDE_NUMBER(2, "CHECK_SLIDE_NUMBER", "检查幻灯片数量"),
@@ -31,7 +31,28 @@ public enum PPTCorrectEnums {
     CHECK_PARAGRAPH_STYLE(6,"CHECK_PARAGRAPH_STYLE", "检查段落样式"),
 
     /** 检查版式 */
-    CHECK_LAYOUT_STYLE(6,"CHECK_LAYOUT_STYLE", "检查版式");
+    CHECK_LAYOUT_STYLE(7,"CHECK_LAYOUT_STYLE", "检查版式"),
+
+    /** 检查文本级别 */
+    CHECK_TEXT_LEVEL(8,"CHECK_TEXT_LEVEL", "检查文本级别"),
+
+    /** 检查母版名称 */
+    CHECK_LAYOUT_NAME(9,"CHECK_LAYOUT_NAME", "检查母版名称"),
+
+    /** 检查文本超链接 */
+    CHECK_TEXT_HYPERLINK(10,"CHECK_TEXT_HYPERLINK", "检查文本超链接"),
+
+    /** 检查文件超链接 */
+    CHECK_FILE_HYPERLINK(11,"CHECK_FILE_HYPERLINK", "检查文件超链接"),
+
+    /** 检查网页超链接 */
+    CHECK_WEB_HYPERLINK(12,"CHECK_WEB_HYPERLINK", "检查网页超链接"),
+
+    /** 检查文本对齐方式 */
+    CHECK_TEXT_ALIGN_STYLE(13,"CHECK_TEXT_ALIGN_STYLE", "检查文本对齐方式"),
+
+    /** 检查节 */
+    CHECK_SECTION(14,"CHECK_SECTION", "检查节");
 
     /** 属性id */
     private final Integer id;

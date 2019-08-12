@@ -25,17 +25,26 @@ public enum PPTSlidePropertiesEnums {
     /** 主题 */
     THEME(3, "THEME"),
 
-    /** 布局类型 */
+    /** 板式类型 */
     LAYOUT_STYLE(4, "LAYOUT_STYLE"),
 
+    /** 母版名称 */
+    LAYOUT_NAME(5, "LAYOUT_NAME"),
+
     /** 尺寸 */
-    SIZE(5, "SIZE"),
+    SIZE(6, "SIZE"),
 
     /** 标题 */
-    TITLE(6, "TITLE"),
+    TITLE(7, "TITLE"),
 
     /** 幻灯片数量 */
-    COUNT(7, "COUNT");
+    COUNT(8, "COUNT"),
+
+    /** 节名称 */
+    SECTION_NAME(9, "SECTION_NAME"),
+
+    /** 节对应的数量 */
+    SECTION_NUMBER(10, "SECTION_NUMBER");
 
     private final Integer id;
     private final String property;

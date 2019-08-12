@@ -19,7 +19,7 @@ public class CheckBean{
     /** 定位对象 */
     private Location location;
     /** 参数集合 */
-    private Map<String ,String> param;
+    private Map<String ,Object> param;
     /** 得分 */
     private String score;
     /** 文件名 */
