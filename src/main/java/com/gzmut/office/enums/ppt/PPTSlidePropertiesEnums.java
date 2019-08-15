@@ -20,7 +20,7 @@ public enum PPTSlidePropertiesEnums {
     BACKGROUND_COLOR(1, "BACKGROUND_COLOR"),
 
     /** 切入方式 */
-    SLIP_STYLE(2, "SLIP_STYLE"),
+    SWITCH_STYLE(2, "SWITCH_STYLE"),
 
     /** 主题 */
     THEME(3, "THEME"),
@@ -38,13 +38,7 @@ public enum PPTSlidePropertiesEnums {
     TITLE(7, "TITLE"),
 
     /** 幻灯片数量 */
-    COUNT(8, "COUNT"),
-
-    /** 节名称 */
-    SECTION_NAME(9, "SECTION_NAME"),
-
-    /** 节对应的数量 */
-    SECTION_NUMBER(10, "SECTION_NUMBER");
+    COUNT(8, "COUNT");
 
     private final Integer id;
     private final String property;

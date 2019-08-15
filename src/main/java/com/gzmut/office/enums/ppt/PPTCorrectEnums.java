@@ -15,7 +15,7 @@ public enum PPTCorrectEnums {
     /** 检查幻灯片主题 */
     CHECK_SLIDE_THEME(1,"CHECK_SLIDE_THEME", "检查幻灯片主题"),
 
-    /** 检查目标数量 */
+    /** 检查幻灯片数量 */
     CHECK_SLIDE_NUMBER(2, "CHECK_SLIDE_NUMBER", "检查幻灯片数量"),
 
     /** 检查背景颜色 */
@@ -24,11 +24,11 @@ public enum PPTCorrectEnums {
     /** 检查文本框内容 */
     CHECK_TEXT_BOX_CONTENT(4, "CHECK_TEXT_BOX_CONTENT", "检查文本框内容"),
 
-    /** 检查段落样式 */
+    /** 检查文本框内容格式 */
     CHECK_TEXT_BOX_CONTENT_FORMAT(5, "CHECK_TEXT_BOX_CONTENT_FORMAT", "检查文本框内容格式"),
 
-    /** 检查段落样式 */
-    CHECK_PARAGRAPH_STYLE(6,"CHECK_PARAGRAPH_STYLE", "检查段落样式"),
+    /** 检查图片数量 */
+    CHECK_PICTURE_COUNT(6,"CHECK_PICTURE_COUNT", "检查图片数量"),
 
     /** 检查版式 */
     CHECK_LAYOUT_STYLE(7,"CHECK_LAYOUT_STYLE", "检查版式"),
@@ -52,7 +52,10 @@ public enum PPTCorrectEnums {
     CHECK_TEXT_ALIGN_STYLE(13,"CHECK_TEXT_ALIGN_STYLE", "检查文本对齐方式"),
 
     /** 检查节 */
-    CHECK_SECTION(14,"CHECK_SECTION", "检查节");
+    CHECK_SECTION(14,"CHECK_SECTION", "检查节"),
+
+    /** 检查幻灯片切换方式 */
+    CHECK_SWITCH_STYLE(15,"CHECK_SWITCH_STYLE", "检查幻灯片切换方式");
 
     /** 属性id */
     private final Integer id;

@@ -7,6 +7,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import org.apache.poi.xslf.usermodel.*;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTRegularTextRun;
+import org.w3c.dom.NodeList;
 
 import java.awt.*;
 import java.io.FileInputStream;
@@ -519,6 +520,11 @@ public class PPTUtils {
         }
     }
 
+    /**
+     * 获取pptx中的各种容器对象
+     * @param pageIndex 幻灯片页码
+     * @return List<XSLFShape>
+     */
     public List<XSLFShape> getShape(int pageIndex) {
         try {
             return this.getSlideShow().getSlides().get(pageIndex).getShapes();
@@ -570,6 +576,38 @@ public class PPTUtils {
             return String.valueOf(fontSize / 100);
         } catch (Exception e) {
             return "";
+        }
+    }
+
+    /**
+     * 获取包含节的结点集合
+     *
+     * @return NodeList
+     */
+    public NodeList getSectionNodeList() {
+        try {
+            return this.getSlideShow().getCTPresentation().getDomNode().getLastChild().getFirstChild().getFirstChild().getChildNodes();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 获取每个节中所包含的幻灯片数量
+     *
+     * @param length 节数量
+     * @return int[]
+     */
+    public int[] getPerSectionSlideCount(int length) {
+        try {
+            NodeList nodeList = this.getSectionNodeList();
+            int[] temp = new int[length];
+            for (int i = 0; i < length; i++) {
+                temp[i] = nodeList.item(i).getFirstChild().getChildNodes().getLength();
+            }
+            return temp;
+        } catch (Exception e) {
+            return null;
         }
     }
 

@@ -121,6 +121,8 @@ public class PPTCorrectServiceImpl implements ICorrect {
         switch (correctEnums) {
             case CHECK_SECTION:
                 return pptCheckUtils.checkSection(location, param, score, sumRule);
+            case CHECK_SWITCH_STYLE:
+                return null;
             case CHECK_SLIDE_THEME:
                 return pptCheckUtils.checkSlideTheme(location, param, score, sumRule);
             case CHECK_TEXT_HYPERLINK:
@@ -139,10 +141,10 @@ public class PPTCorrectServiceImpl implements ICorrect {
                 return pptCheckUtils.checkTextAlignStyle(location, param, score, sumRule);
             case CHECK_BACKGROUND_COLOR:
                 return pptCheckUtils.checkBackgroundColor(location, param, score, sumRule);
-            case CHECK_PARAGRAPH_STYLE:
-                return null;
             case CHECK_LAYOUT_STYLE:
                 return pptCheckUtils.checkLayoutStyle(location, param, score, sumRule);
+            case CHECK_PICTURE_COUNT:
+                return null;
             default:
         }
 

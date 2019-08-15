@@ -1,5 +1,6 @@
 package com.gzmut.office.util;
 
+import com.gzmut.office.enums.ppt.PPTSectionPropertiesEnums;
 import com.gzmut.office.enums.ppt.PPTSlidePropertiesEnums;
 import com.gzmut.office.enums.ppt.PPTTargetEnums;
 import com.gzmut.office.enums.ppt.PPTTextBoxPropertiesEnums;
@@ -8,6 +9,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xslf.usermodel.*;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTRegularTextRun;
 import org.w3c.dom.NodeList;
 
@@ -75,7 +81,7 @@ public class PPTCheckUtils {
                         String[] answer_color = backgroundColor.split(",");
 
                         if (red == Integer.parseInt(answer_color[0]) && green == Integer.parseInt(answer_color[1]) && blue == Integer.parseInt(answer_color[2])) {
-                            infoMap.put("score", String.valueOf(Integer.parseInt(score)/sumRule));
+                            infoMap.put("score", String.valueOf(Integer.parseInt(score) / sumRule));
                             infoMap.put("msg", "背景颜色正确!");
                         } else {
                             infoMap.put("score", "0.0");
@@ -123,6 +129,21 @@ public class PPTCheckUtils {
     }
 
     /**
+     *
+     * @param location 定位参数
+     * @param param    元素数量
+     * @param score    小题总分
+     * @param sumRule  小题规则总数
+     * @return Map
+     */
+    public Map<String, String> checkSwitchStyle(Location location, Map<String, Object> param, String score, int sumRule) {
+
+        Map<String, String> infoMap = new HashMap<>(2);
+
+        return infoMap;
+    }
+
+    /**
      * 检查文本超链接
      *
      * @param location 定位参数
@@ -141,7 +162,7 @@ public class PPTCheckUtils {
         if (slides.size() != 0) {
             int page = Integer.parseInt(location.getLp());
             sb.append("第 " + page + " 张幻灯片:");
-            List<XSLFShape> xslfShapeList = slides.get(page - 1).getShapes();
+            List<XSLFShape> xslfShapeList = pptUtils.getShape(page - 1);
             for (int j = 0, len = xslfShapeList.size(); j < len; j++) {
                 XSLFShape sh = xslfShapeList.get(j);
                 if (sh instanceof XSLFTextShape) {
@@ -284,36 +305,38 @@ public class PPTCheckUtils {
     public Map<String, String> checkSection(Location location, Map<String, Object> param, String score, int sumRule) {
 
         Map<String, String> infoMap = new HashMap<>(2);
-        String[] answer_section_name = param.get(PPTSlidePropertiesEnums.SECTION_NAME.getProperty()).toString().split("&#@@#&");
-        String[] answer_section_number = param.get(PPTSlidePropertiesEnums.SECTION_NUMBER.getProperty()).toString().split(",");
+        String[] answer_section_name = param.get(PPTSectionPropertiesEnums.SECTION_NAME.getProperty()).toString().split("&#@@#&");
+        String[] answer_section_number = param.get(PPTSectionPropertiesEnums.SECTION_NUMBER.getProperty()).toString().split(",");
         String xml = pptUtils.getSlideShow().getCTPresentation().xmlText();
         StringBuilder sb = new StringBuilder("[ppt节检查结果]");
         boolean result = true;
-        for(String name : answer_section_name) {
-            if(!xml.contains(name)) {
+        for (String name : answer_section_name) {
+            if (!xml.contains(name)) {
                 result = false;
                 break;
             }
         }
         int len = answer_section_number.length;
-        NodeList nodeList = pptUtils.getSlideShow().getCTPresentation().getDomNode().getLastChild().getFirstChild().getFirstChild().getChildNodes();
-        if(nodeList.getLength() != len) {
-            result = false;
-        }else {
-            for(int i = 0; i < len; i++) {
-                if (nodeList.item(i).getFirstChild().getChildNodes().getLength() != Integer.parseInt(answer_section_number[i])) {
-                    result = false;
-                    break;
+        NodeList nodeList = pptUtils.getSectionNodeList();
+        if (nodeList != null) {
+            if (nodeList.getLength() != len) {
+                result = false;
+            } else {
+                for (int i = 0; i < len; i++) {
+                    if (nodeList.item(i).getFirstChild().getChildNodes().getLength() != Integer.parseInt(answer_section_number[i])) {
+                        result = false;
+                        break;
+                    }
                 }
             }
         }
-        if(result) {
+        if (result) {
             sb.append("节设置正确");
             // 此规则的总分数
             float temp = Float.parseFloat(score) / sumRule;
             infoMap.put("score", String.valueOf(temp));
             infoMap.put("msg", sb.toString());
-        }else {
+        } else {
             sb.append("节设置错误");
             infoMap.put("score", "0.0");
             infoMap.put("msg", sb.toString());
@@ -493,23 +516,23 @@ public class PPTCheckUtils {
                 }
             }
         }
-        for(int i = 0, len = 3; i < len; i++) {
-            if(h_align[i] != Integer.parseInt(answer_h_align[i])) {
+        for (int i = 0, len = 3; i < len; i++) {
+            if (h_align[i] != Integer.parseInt(answer_h_align[i])) {
                 result = false;
                 break;
             }
-            if(v_align[i] != Integer.parseInt(answer_v_align[i])) {
+            if (v_align[i] != Integer.parseInt(answer_v_align[i])) {
                 result = false;
                 break;
             }
         }
-        if(result) {
+        if (result) {
             sb.append("文本段落对齐正确");
             // 此规则的总分数
             float temp = Float.parseFloat(score) / sumRule;
             infoMap.put("score", String.valueOf(temp));
             infoMap.put("msg", sb.toString());
-        }else {
+        } else {
             sb.append("文本段落对齐错误");
             // 此规则的总分数
             infoMap.put("score", "0.0");
@@ -542,7 +565,7 @@ public class PPTCheckUtils {
             if (pages.length == 1) {
                 int page = Integer.parseInt(pages[0]);
                 sb.append("第 " + page + " 张幻灯片:");
-                List<XSLFShape> xslfShapeList = slides.get(page - 1).getShapes();
+                List<XSLFShape> xslfShapeList = pptUtils.getShape(page - 1);
                 for (int j = 0, len = xslfShapeList.size(); j < len; j++) {
                     XSLFShape sh = xslfShapeList.get(j);
                     if (sh instanceof XSLFTextShape) {
@@ -600,7 +623,7 @@ public class PPTCheckUtils {
                 int index = start_page;
                 while (index <= end_page) {
                     sb.append("第 " + index + " 张幻灯片:");
-                    List<XSLFShape> xslfShapeList = slides.get(index - 1).getShapes();
+                    List<XSLFShape> xslfShapeList = pptUtils.getShape(index - 1);
                     index++;
                     for (int j = 0, len = xslfShapeList.size(); j < len; j++) {
                         XSLFShape sh = xslfShapeList.get(j);
@@ -692,7 +715,7 @@ public class PPTCheckUtils {
             StringBuilder sb = new StringBuilder("[文本级别检查结果] " + System.lineSeparator());
             List<XSLFSlide> slides = pptUtils.getSlideShow().getSlides();
             sb.append("第 " + page + " 张幻灯片:");
-            List<XSLFShape> xslfShapeList = slides.get(page - 1).getShapes();
+            List<XSLFShape> xslfShapeList = pptUtils.getShape(page - 1);
             if (xslfShapeList.size() != 0) {
                 int title = 0;
                 int subTitle = 0;
@@ -725,16 +748,11 @@ public class PPTCheckUtils {
                         }
                     }
                 }
-                String title_temp = param.get(PPTTextBoxPropertiesEnums.TITLE.name()) == null ? ""
-                        : param.get(PPTTextBoxPropertiesEnums.TITLE.name()).toString();
-                String subTitle_temp = param.get(PPTTextBoxPropertiesEnums.SUBTITLE.name()) == null ? ""
-                        : param.get(PPTTextBoxPropertiesEnums.SUBTITLE.name()).toString();
-                String first_text_temp = param.get(PPTTextBoxPropertiesEnums.FIRST_TEXT.name()) == null ? ""
-                        : param.get(PPTTextBoxPropertiesEnums.FIRST_TEXT.name()).toString();
-                String second_text_temp = param.get(PPTTextBoxPropertiesEnums.SECOND_TEXT.name()) == null ? ""
-                        : param.get(PPTTextBoxPropertiesEnums.SECOND_TEXT.name()).toString();
-                String third_text_temp = param.get(PPTTextBoxPropertiesEnums.THIRD_TEXT.name()) == null ? ""
-                        : param.get(PPTTextBoxPropertiesEnums.THIRD_TEXT.name()).toString();
+                String title_temp = param.get(PPTTextBoxPropertiesEnums.TITLE.name()).toString();
+                String subTitle_temp = param.get(PPTTextBoxPropertiesEnums.SUBTITLE.name()).toString();
+                String first_text_temp = param.get(PPTTextBoxPropertiesEnums.FIRST_TEXT.name()).toString();
+                String second_text_temp = param.get(PPTTextBoxPropertiesEnums.SECOND_TEXT.name()).toString();
+                String third_text_temp = param.get(PPTTextBoxPropertiesEnums.THIRD_TEXT.name()).toString();
                 if (title_temp != null && title_temp.length() != 0) {
                     if (Integer.parseInt(title_temp) == title) {
                         count++;
