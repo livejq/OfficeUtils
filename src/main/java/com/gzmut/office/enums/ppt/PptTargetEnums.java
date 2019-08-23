@@ -11,7 +11,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public enum PPTTargetEnums {
+public enum PptTargetEnums {
 
     /** 节 */
     SECTION(1, "SECTION"),

@@ -4,10 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.gzmut.office.bean.CheckBean;
 import com.gzmut.office.bean.CorrectInfo;
 import com.gzmut.office.bean.Location;
-import com.gzmut.office.enums.ppt.PPTCorrectEnums;
+import com.gzmut.office.enums.ppt.PptCorrectEnums;
 import com.gzmut.office.service.ICorrect;
-import com.gzmut.office.util.PPTCheckUtils;
-import com.gzmut.office.util.PPTUtils;
+import com.gzmut.office.util.PptCheckUtils;
+import com.gzmut.office.util.PptUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -25,15 +25,15 @@ import java.util.*;
  * @since 2019/7/26
  */
 @Slf4j
-public class PPTCorrectServiceImpl implements ICorrect {
+public class PptCorrectServiceImpl implements ICorrect {
 
     @Getter
     @Setter
     private String examDir;
 
-    private PPTUtils pptUtils = new PPTUtils();
+    private PptUtils pptUtils = new PptUtils();
 
-    private PPTCheckUtils pptCheckUtils = new PPTCheckUtils();
+    private PptCheckUtils pptCheckUtils = new PptCheckUtils();
 
     @Override
     public List<String> getCorrectJson(String num) {
@@ -116,7 +116,7 @@ public class PPTCorrectServiceImpl implements ICorrect {
         Map<String, Object> param = checkBean.getParam();
         Location location = checkBean.getLocation();
         String score = checkBean.getScore();
-        PPTCorrectEnums correctEnums = PPTCorrectEnums.valueOf(checkBean.getKnowledge());
+        PptCorrectEnums correctEnums = PptCorrectEnums.valueOf(checkBean.getKnowledge());
 
         switch (correctEnums) {
             case CHECK_SECTION:
@@ -139,8 +139,8 @@ public class PPTCorrectServiceImpl implements ICorrect {
                 return pptCheckUtils.checkTextBoxContentFormat(location, param, score, sumRule);
             case CHECK_TEXT_ALIGN_STYLE:
                 return pptCheckUtils.checkTextAlignStyle(location, param, score, sumRule);
-            case CHECK_BACKGROUND_COLOR:
-                return pptCheckUtils.checkBackgroundColor(location, param, score, sumRule);
+            case CHECK_SLIDE_BACKGROUND_COLOR:
+                return pptCheckUtils.checkSlideBackgroundColor(location, param, score, sumRule);
             case CHECK_LAYOUT_STYLE:
                 return pptCheckUtils.checkLayoutStyle(location, param, score, sumRule);
             case CHECK_PICTURE_COUNT:

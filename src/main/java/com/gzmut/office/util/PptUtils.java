@@ -24,17 +24,17 @@ import java.util.List;
  */
 @Getter
 @Setter
-public class PPTUtils {
+public class PptUtils {
 
-    // 需要分别处理，实现原型私有
+    /** 需要分别处理，实现原型私有 */
     private String fileName;
 
     private XMLSlideShow slideShow;
 
-    public PPTUtils() {
+    public PptUtils() {
     }
 
-    public PPTUtils(String fileName) {
+    public PptUtils(String fileName) {
 
         this.fileName = fileName;
         if (initXMLSlideShow(fileName)) {

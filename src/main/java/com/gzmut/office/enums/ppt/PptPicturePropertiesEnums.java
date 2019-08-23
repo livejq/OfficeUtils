@@ -11,13 +11,19 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public enum PPTSectionPropertiesEnums {
+public enum PptPicturePropertiesEnums {
 
-    /** 节名称 */
-    SECTION_NAME(1, "SECTION_NAME"),
+    /** 尺寸 */
+    SIZE(1, "SIZE"),
 
-    /** 节对应的幻灯片数量 */
-    SECTION_NUMBER(2, "SECTION_NUMBER");
+    /** 超链接 */
+    HYPERLINK(2, "HYPERLINK"),
+
+    /** 类型 */
+    CONTENT_TYPE(3, "CONTENT_TYPE"),
+
+    /** 后缀 */
+    EXTENSION(4, "EXTENSION");
 
     private final Integer id;
     private final String property;

@@ -11,7 +11,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public enum PPTTextBoxPropertiesEnums {
+public enum PptTextBoxPropertiesEnums {
 
     /** 填充颜色 */
     FILL_COLOR(1, "FILL_COLOR"),
@@ -80,7 +80,10 @@ public enum PPTTextBoxPropertiesEnums {
     HORIZONTAL_ALIGN(22, "HORIZONTAL_ALIGN"),
 
     /** 垂直对齐 相对于文本框  anchor="t" anchor="ctr" anchor="b"*/
-    VERTICAL_ALIGN(23, "VERTICAL_ALIGN");
+    VERTICAL_ALIGN(23, "VERTICAL_ALIGN"),
+
+    /** 背景颜色 */
+    BACKGROUND_COLOR(24, "BACKGROUND_COLOR");
 
     private final Integer id;
     private final String property;

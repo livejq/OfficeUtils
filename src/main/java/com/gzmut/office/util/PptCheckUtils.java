@@ -1,19 +1,14 @@
 package com.gzmut.office.util;
 
-import com.gzmut.office.enums.ppt.PPTSectionPropertiesEnums;
-import com.gzmut.office.enums.ppt.PPTSlidePropertiesEnums;
-import com.gzmut.office.enums.ppt.PPTTargetEnums;
-import com.gzmut.office.enums.ppt.PPTTextBoxPropertiesEnums;
+import com.gzmut.office.enums.ppt.PptSectionPropertiesEnums;
+import com.gzmut.office.enums.ppt.PptSlidePropertiesEnums;
+import com.gzmut.office.enums.ppt.PptTargetEnums;
+import com.gzmut.office.enums.ppt.PptTextBoxPropertiesEnums;
 import com.gzmut.office.bean.Location;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xslf.usermodel.*;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTRegularTextRun;
 import org.w3c.dom.NodeList;
 
@@ -31,14 +26,14 @@ import java.util.List;
 @Slf4j
 @Getter
 @Setter
-public class PPTCheckUtils {
+public class PptCheckUtils {
 
-    private PPTUtils pptUtils;
+    private PptUtils pptUtils;
 
-    public PPTCheckUtils() {
+    public PptCheckUtils() {
     }
 
-    public PPTCheckUtils(PPTUtils pptUtils) {
+    public PptCheckUtils(PptUtils pptUtils) {
         this.pptUtils = pptUtils;
     }
 
@@ -55,14 +50,14 @@ public class PPTCheckUtils {
      * @param sumRule  小题规则总数
      * @return Map
      */
-    public Map<String, String> checkBackgroundColor(Location location, Map<String, Object> param, String score, int sumRule) {
+    public Map<String, String> checkSlideBackgroundColor(Location location, Map<String, Object> param, String score, int sumRule) {
 
         Map<String, String> infoMap = new HashMap<>(2);
         String[] slides = location.getLp().split(",");
 
         if (slides != null) {
             for (String slide : slides) {
-                PPTTargetEnums target = PPTTargetEnums.valueOf(location.getLo());
+                PptTargetEnums target = PptTargetEnums.valueOf(location.getLo());
                 switch (target) {
                     case SLIDE:
                         int red, green, blue;
@@ -273,7 +268,7 @@ public class PPTCheckUtils {
         int num = 0;
         StringBuilder sb = new StringBuilder("[幻灯片板式风格检查结果]");
         if (slide != null || slide.length() != 0) {
-            String answer_layout = param.get(PPTSlidePropertiesEnums.LAYOUT_STYLE.getProperty()).toString();
+            String answer_layout = param.get(PptSlidePropertiesEnums.LAYOUT_STYLE.getProperty()).toString();
             String layout = pptUtils.getSlideLayoutType(pptUtils.getSlideShow().getSlides()
                     .get(Integer.parseInt(slide) - 1));
             if (answer_layout != null || answer_layout.length() != 0) {
@@ -305,8 +300,8 @@ public class PPTCheckUtils {
     public Map<String, String> checkSection(Location location, Map<String, Object> param, String score, int sumRule) {
 
         Map<String, String> infoMap = new HashMap<>(2);
-        String[] answer_section_name = param.get(PPTSectionPropertiesEnums.SECTION_NAME.getProperty()).toString().split("&#@@#&");
-        String[] answer_section_number = param.get(PPTSectionPropertiesEnums.SECTION_NUMBER.getProperty()).toString().split(",");
+        String[] answer_section_name = param.get(PptSectionPropertiesEnums.SECTION_NAME.getProperty()).toString().split("&#@@#&");
+        String[] answer_section_number = param.get(PptSectionPropertiesEnums.SECTION_NUMBER.getProperty()).toString().split(",");
         String xml = pptUtils.getSlideShow().getCTPresentation().xmlText();
         StringBuilder sb = new StringBuilder("[ppt节检查结果]");
         boolean result = true;
@@ -359,7 +354,7 @@ public class PPTCheckUtils {
         List<String> layout_name = new LinkedList<>();
         int num = 0;
         StringBuilder sb = new StringBuilder("[幻灯片板式名称检查结果]");
-        String answer_layout_name = param.get(PPTSlidePropertiesEnums.LAYOUT_NAME.getProperty()).toString();
+        String answer_layout_name = param.get(PptSlidePropertiesEnums.LAYOUT_NAME.getProperty()).toString();
         List<XSLFSlideMaster> masters = pptUtils.getSlideShow().getSlideMasters();
         for (XSLFSlideMaster master : masters) {
             for (XSLFSlideLayout layout : master.getSlideLayouts()) {
@@ -404,7 +399,7 @@ public class PPTCheckUtils {
         int num = 0;
         int textBoxCount = 0;
         int page = Integer.parseInt(location.getLp());
-        String[] answer_content = param.get(PPTTextBoxPropertiesEnums
+        String[] answer_content = param.get(PptTextBoxPropertiesEnums
                 .TEXT_CONTENT.getProperty()).toString().split("&#@@#&");
 
         sb.append("第 " + page + " 张幻灯片:");
@@ -442,10 +437,10 @@ public class PPTCheckUtils {
         boolean result = true;
         int page = Integer.parseInt(location.getLp());
         // 三个参数，左中右个数
-        String[] answer_h_align = param.get(PPTTextBoxPropertiesEnums
+        String[] answer_h_align = param.get(PptTextBoxPropertiesEnums
                 .HORIZONTAL_ALIGN.getProperty()).toString().split(",");
         // 三个参数，上中下个数
-        String[] answer_v_align = param.get(PPTTextBoxPropertiesEnums
+        String[] answer_v_align = param.get(PptTextBoxPropertiesEnums
                 .VERTICAL_ALIGN.getProperty()).toString().split(",");
 
         sb.append("第 " + page + " 张幻灯片:");
@@ -579,7 +574,7 @@ public class PPTCheckUtils {
                         int randRaw = rList.size() == 0 ? 0 : random.nextInt(rList.size());
                         // 判断字体颜色
                         String hexColor = pptUtils.getTextRunFontColor(rList, randRaw);
-                        Object strColor = param.get(PPTTextBoxPropertiesEnums
+                        Object strColor = param.get(PptTextBoxPropertiesEnums
                                 .TEXT_COLOR.getProperty());
                         String answer_hexColor = (strColor == null ? "" : strColor.toString());
                         if (hexColor.contains(answer_hexColor)) {
@@ -591,7 +586,7 @@ public class PPTCheckUtils {
                         }
                         // 判断字体样式
                         String fontStyle = pptUtils.getTextRunFontStyle(rList, randRaw);
-                        Object strStyle = param.get(PPTTextBoxPropertiesEnums
+                        Object strStyle = param.get(PptTextBoxPropertiesEnums
                                 .TEXT_STYLE.getProperty());
                         String answer_fontStyle = (strStyle == null ? "" : strStyle.toString());
                         if (answer_fontStyle.equals(fontStyle)) {
@@ -603,7 +598,7 @@ public class PPTCheckUtils {
                         }
                         // 判断字体大小
                         String fontSize = pptUtils.getTextRunFontSize(rList, randRaw);
-                        Object strSize = param.get(PPTTextBoxPropertiesEnums
+                        Object strSize = param.get(PptTextBoxPropertiesEnums
                                 .TEXT_SIZE.getProperty());
                         String answer_fontSize = strSize.toString();
                         if (answer_fontSize.equals(fontSize)) {
@@ -638,8 +633,8 @@ public class PPTCheckUtils {
                             int randRaw = rList.size() == 0 ? 0 : random.nextInt(rList.size());
                             // 判断字体颜色
                             String hexColor = pptUtils.getTextRunFontColor(rList, randRaw);
-                            String strColor = param.get(PPTTextBoxPropertiesEnums.TEXT_COLOR.getProperty()) == null ? ""
-                                    : param.get(PPTTextBoxPropertiesEnums.TEXT_COLOR.getProperty()).toString();
+                            String strColor = param.get(PptTextBoxPropertiesEnums.TEXT_COLOR.getProperty()) == null ? ""
+                                    : param.get(PptTextBoxPropertiesEnums.TEXT_COLOR.getProperty()).toString();
                             String answer_hexColor = strColor;
                             if (hexColor.contains(answer_hexColor)) {
                                 num++;
@@ -650,7 +645,7 @@ public class PPTCheckUtils {
                             }
                             // 判断字体样式
                             String fontStyle = pptUtils.getTextRunFontStyle(rList, randRaw);
-                            Object strStyle = param.get(PPTTextBoxPropertiesEnums
+                            Object strStyle = param.get(PptTextBoxPropertiesEnums
                                     .TEXT_STYLE.getProperty());
                             String answer_fontStyle = (strStyle == null ? "" : strStyle.toString());
                             if (answer_fontStyle.equals(fontStyle)) {
@@ -663,7 +658,7 @@ public class PPTCheckUtils {
                             // 判断字体大小
                             String fontSize = pptUtils.getTextRunFontSize(rList, randRaw);
 
-                            Object strSize = param.get(PPTTextBoxPropertiesEnums
+                            Object strSize = param.get(PptTextBoxPropertiesEnums
                                     .TEXT_SIZE.getProperty());
                             String answer_fontSize = strSize.toString();
                             if (answer_fontSize.equals(fontSize)) {
@@ -748,11 +743,11 @@ public class PPTCheckUtils {
                         }
                     }
                 }
-                String title_temp = param.get(PPTTextBoxPropertiesEnums.TITLE.name()).toString();
-                String subTitle_temp = param.get(PPTTextBoxPropertiesEnums.SUBTITLE.name()).toString();
-                String first_text_temp = param.get(PPTTextBoxPropertiesEnums.FIRST_TEXT.name()).toString();
-                String second_text_temp = param.get(PPTTextBoxPropertiesEnums.SECOND_TEXT.name()).toString();
-                String third_text_temp = param.get(PPTTextBoxPropertiesEnums.THIRD_TEXT.name()).toString();
+                String title_temp = param.get(PptTextBoxPropertiesEnums.TITLE.name()) == null ? "" : param.get(PptTextBoxPropertiesEnums.TITLE.name()).toString();
+                String subTitle_temp = param.get(PptTextBoxPropertiesEnums.SUBTITLE.name()) == null ? "" : param.get(PptTextBoxPropertiesEnums.SUBTITLE.name()).toString();
+                String first_text_temp = param.get(PptTextBoxPropertiesEnums.FIRST_TEXT.name()) == null ? "" : param.get(PptTextBoxPropertiesEnums.FIRST_TEXT.name()).toString();
+                String second_text_temp = param.get(PptTextBoxPropertiesEnums.SECOND_TEXT.name()) == null ? "" : param.get(PptTextBoxPropertiesEnums.SECOND_TEXT.name()).toString();
+                String third_text_temp = param.get(PptTextBoxPropertiesEnums.THIRD_TEXT.name()) == null ? "" : param.get(PptTextBoxPropertiesEnums.THIRD_TEXT.name()).toString();
                 if (title_temp != null && title_temp.length() != 0) {
                     if (Integer.parseInt(title_temp) == title) {
                         count++;

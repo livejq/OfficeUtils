@@ -14,7 +14,7 @@ import java.util.logging.Level;
  */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public enum PPTSlidePropertiesEnums {
+public enum PptSlidePropertiesEnums {
 
     /** 背景颜色 */
     BACKGROUND_COLOR(1, "BACKGROUND_COLOR"),
