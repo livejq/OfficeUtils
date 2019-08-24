@@ -108,22 +108,22 @@ public class PowerPointConstants {
     public static final String CRUCIAL_NODE_XML_TAG = "p:cNvPr";
 
     /**
-     * Shape outline's color value where in xml path
+     * ShapeView outline's color value where in xml path
      */
     public static final String SHAPE_OUTLINE_COLOR_VALUE_XPATH = "../..//a:lnRef/a:schemeClr/@val";
 
     /**
-     * Shape fill color value where in xml path
+     * ShapeView fill color value where in xml path
      */
     public static final String SHAPE_FILL_COLOR_VALUE_XPATH = "../..//a:fillRef/a:schemeClr/@val";
 
     /**
-     * Shape effect color value where in xml path
+     * ShapeView effect color value where in xml path
      */
     public static final String SHAPE_EFFECT_COLOR_VALUE_XPATH = "../..//a:effectRef/a:schemeClr/@val";
 
     /**
-     * Shape font color value where in xml path
+     * ShapeView font color value where in xml path
      */
     public static final String SHAPE_FONT_COLOR_VALUE_XPATH = "../..//a:fontRef/a:schemeClr/@val";
 

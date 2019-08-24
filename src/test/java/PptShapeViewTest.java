@@ -1,7 +1,7 @@
-import com.gzmut.office.bean.Shape;
-import com.gzmut.office.enums.PowerPointConstants;
-import com.gzmut.office.util.PPtUtils;
+import com.gzmut.office.bean.ShapeView;
 
+import com.gzmut.office.enums.PowerPointConstants;
+import com.gzmut.office.util.PptUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ooxml.POIXMLDocumentPart;
 import org.apache.poi.xslf.usermodel.XMLSlideShow;
@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * 基于PPT的解析Shape测试类
  * 包含解析内容如下：
- * 获取单个幻灯片中各个Shape元素的属性如下->[List<Shape>]
+ * 获取单个幻灯片中各个Shape元素的属性如下->[List<ShapeView>]
  * a. id 形状元素自带ID
  * b. name 形状元素自带name
  * c. text 形状元素内文本内容
@@ -33,7 +33,7 @@ import java.util.List;
  * @author zzzzzzzzzzzzzzz
  * @date 2019-08-08
  */
-public class PptShapeTest {
+public class PptShapeViewTest {
     /**
      * JUnit test class resource folder path
      */
@@ -47,18 +47,18 @@ public class PptShapeTest {
     /**
      * PowerPoint file test tools class
      */
-    private PPtUtils pptUtils = new PPtUtils(fileName);
+    private PptUtils pptUtils = new PptUtils(fileName);
 
 
     @Test
     public void test() throws IOException, DocumentException {
         XMLSlideShow xmlSlideShow = pptUtils.getSlideShow();
-        List<Shape> shapeList;
+        List<ShapeView> shapeViewList;
         System.out.println("开始扫描文件：" + fileName + "中Shape元素");
         for (XSLFSlide slide : xmlSlideShow.getSlides()) {
-            shapeList = pptUtils.getShape(slide);
-            if (0 != shapeList.size()) {
-                shapeList.forEach((shape) -> System.out.println("第" + slide.getSlideNumber() + "页幻灯片中，搜索到Shape属性：" + shape.toString()));
+            shapeViewList = pptUtils.getShape(slide);
+            if (0 != shapeViewList.size()) {
+                shapeViewList.forEach((shapeView) -> System.out.println("第" + slide.getSlideNumber() + "页幻灯片中，搜索到Shape属性：" + shapeView.toString()));
             }
         }
         System.out.println("扫描结束");
@@ -70,10 +70,10 @@ public class PptShapeTest {
      * @param slide 所需查找形状属性的幻灯片
      * @return java.util.List<bean.Video>
      */
-    private List<Shape> getShape(XSLFSlide slide) throws IOException, DocumentException {
-        Shape shape;
+    private List<ShapeView> getShape(XSLFSlide slide) throws IOException, DocumentException {
+        ShapeView shapeView;
         Object attribute;
-        List<Shape> list = new ArrayList<>();
+        List<ShapeView> list = new ArrayList<>();
         for (POIXMLDocumentPart part : slide.getSlideShow().getRelations()) {
             if (part.getPackagePart().getPartName().getName().startsWith(PowerPointConstants.SLIDE_RESOURCE_URL_PREFIX + slide.getSlideNumber())) {
                 SAXReader reader = new SAXReader();
@@ -81,40 +81,40 @@ public class PptShapeTest {
                 Element root = document.getRootElement();
                 List elements = root.selectNodes("//" + PowerPointConstants.CRUCIAL_NODE_XML_TAG);
                 for (Object o : elements) {
-                    shape = new Shape();
+                    shapeView = new ShapeView();
                     Element element = (Element) o;
                     attribute = element.selectSingleNode(PowerPointConstants.ID_ATTRIBUTE_KEY);
                     if (attribute != null) {
-                        shape.setId(((Attribute) attribute).getValue());
+                        shapeView.setId(((Attribute) attribute).getValue());
                     }
                     attribute = element.selectSingleNode(PowerPointConstants.NAME_ATTRIBUTE_KEY);
                     if (attribute != null && StringUtils.isNotBlank(((Attribute) attribute).getValue())) {
-                        shape.setName(((Attribute) attribute).getValue());
+                        shapeView.setName(((Attribute) attribute).getValue());
                     } else {
                         continue;
                     }
                     String text = getShapeElementSpliceText(element);
                     if (StringUtils.isNotBlank(text)) {
-                        shape.setText(text);
+                        shapeView.setText(text);
                     }
                     attribute = element.selectSingleNode(PowerPointConstants.SHAPE_OUTLINE_COLOR_VALUE_XPATH);
                     if (attribute != null) {
-                        shape.setLnVal(((Attribute) attribute).getValue());
+                        shapeView.setLnVal(((Attribute) attribute).getValue());
                     }
                     attribute = element.selectSingleNode(PowerPointConstants.SHAPE_FILL_COLOR_VALUE_XPATH);
                     if (attribute != null) {
-                        shape.setFillVal(((Attribute) attribute).getValue());
+                        shapeView.setFillVal(((Attribute) attribute).getValue());
                     }
                     attribute = element.selectSingleNode(PowerPointConstants.SHAPE_EFFECT_COLOR_VALUE_XPATH);
                     if (attribute != null) {
-                        shape.setEffectVal(((Attribute) attribute).getValue());
+                        shapeView.setEffectVal(((Attribute) attribute).getValue());
                     }
                     attribute = element.selectSingleNode(PowerPointConstants.SHAPE_FONT_COLOR_VALUE_XPATH);
                     if (attribute != null) {
-                        shape.setFontVal(((Attribute) attribute).getValue());
+                        shapeView.setFontVal(((Attribute) attribute).getValue());
                     }
-                    if (shape.isNotBlank()) {
-                        list.add(shape);
+                    if (shapeView.isNotBlank()) {
+                        list.add(shapeView);
                     }
                 }
             }

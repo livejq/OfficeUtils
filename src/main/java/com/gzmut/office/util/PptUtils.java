@@ -1,22 +1,16 @@
 package com.gzmut.office.util;
 
-import com.gzmut.office.bean.Font;
-import com.gzmut.office.bean.HyperLink;
-import com.gzmut.office.bean.Shape;
-import com.gzmut.office.bean.Sound;
-import com.gzmut.office.bean.Video;
+import com.gzmut.office.bean.*;
 import com.gzmut.office.enums.OfficeEnums;
 import com.gzmut.office.enums.PowerPointConstants;
-
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ooxml.POIXMLDocumentPart;
-import org.apache.poi.xslf.usermodel.SlideLayout;
 import org.apache.poi.xslf.usermodel.XMLSlideShow;
+import org.apache.poi.xslf.usermodel.XSLFShape;
 import org.apache.poi.xslf.usermodel.XSLFSlide;
+import org.apache.poi.xslf.usermodel.XSLFTextShape;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
@@ -25,18 +19,15 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTRegularTextRun;
+import org.w3c.dom.NodeList;
 
-import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Color;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * MS Office 2010 pptx
@@ -47,17 +38,17 @@ import java.util.Map;
  */
 @Getter
 @Setter
-public class PPtUtils {
+public class PptUtils {
 
-    // 需要分别处理，实现原型私有
+    /** 需要分别处理，实现原型私有 */
     private String fileName;
 
     private XMLSlideShow slideShow;
 
-    public PPtUtils() {
+    public PptUtils() {
     }
 
-    public PPtUtils(String fileName) {
+    public PptUtils(String fileName) {
 
         this.fileName = fileName;
         if (initXMLSlideShow(fileName)) {
@@ -174,11 +165,11 @@ public class PPtUtils {
      * @param slide 幻灯片对象
      * @return org.apache.poi.xslf.usermodel.SlideLayout
      */
-    public SlideLayout getSlideLayoutType(@NonNull XSLFSlide slide) {
+    public String getSlideLayoutType(XSLFSlide slide) {
         try {
-            return slide.getSlideLayout().getType();
+            return slide.getSlideLayout().getType().name();
         } catch (Exception e) {
-            return null;
+            return "";
         }
     }
 
@@ -188,7 +179,7 @@ public class PPtUtils {
      * @param slide 幻灯片对象
      * @return java.lang.String
      */
-    public String getSlideTitle(@NonNull XSLFSlide slide) {
+    public String getSlideTitle(XSLFSlide slide) {
         try {
             return slide.getTitle();
         } catch (Exception e) {
@@ -202,7 +193,7 @@ public class PPtUtils {
      * @param slide 幻灯片对象
      * @return Integer
      */
-    public Integer getSlideId(@NonNull XSLFSlide slide) {
+    public Integer getSlideId(XSLFSlide slide) {
         try {
             return slide.getSlideNumber();
         } catch (Exception e) {
@@ -216,7 +207,7 @@ public class PPtUtils {
      * @param slide 幻灯片对象
      * @return java.lang.String
      */
-    public String getSlideTheme(@NonNull XSLFSlide slide) {
+    public String getSlideTheme(XSLFSlide slide) {
         try {
             return slide.getTheme().getName();
         } catch (Exception e) {
@@ -230,7 +221,7 @@ public class PPtUtils {
      * @param slide 幻灯片对象
      * @return java.awt.Color
      */
-    public Color getSlideBackgroundColor(@NonNull XSLFSlide slide) {
+    public Color getSlideBackgroundColor(XSLFSlide slide) {
         try {
             return slide.getBackground().getFillColor();
         } catch (Exception e) {
@@ -244,7 +235,7 @@ public class PPtUtils {
      * @param slide 幻灯片对象
      * @return Integer
      */
-    public Integer getSlideFillColorAlpha(@NonNull XSLFSlide slide) {
+    public Integer getSlideFillColorAlpha(XSLFSlide slide) {
         try {
             return slide.getBackground().getFillColor().getAlpha();
         } catch (Exception e) {
@@ -259,7 +250,7 @@ public class PPtUtils {
      * @param TextBoxIndex 文本框位置编号（从0开始）
      * @return java.awt.Color
      */
-    public Color getTextBoxBackgroundColor(@NonNull XSLFSlide slide, @NonNull int TextBoxIndex) {
+    public Color getTextBoxBackgroundColor(XSLFSlide slide, int TextBoxIndex) {
         try {
             return slide.getPlaceholder(TextBoxIndex).getFillColor();
         } catch (Exception e) {
@@ -274,7 +265,7 @@ public class PPtUtils {
      * @param TextBoxIndex 文本框位置编号（从0开始）
      * @return java.lang.String
      */
-    public String getTextBoxContent(@NonNull XSLFSlide slide, @NonNull int TextBoxIndex) {
+    public String getTextBoxContent(XSLFSlide slide, int TextBoxIndex) {
         try {
             return slide.getPlaceholder(TextBoxIndex).getText();
         } catch (Exception e) {
@@ -289,7 +280,7 @@ public class PPtUtils {
      * @param TextBoxIndex 文本框位置编号（从0开始）
      * @return Integer
      */
-    public Integer getTextBoxParagraphSum(@NonNull XSLFSlide slide, @NonNull int TextBoxIndex) {
+    public Integer getTextBoxParagraphSum(XSLFSlide slide, int TextBoxIndex) {
         try {
             return slide.getPlaceholder(TextBoxIndex).getTextBody().getParagraphs().size();
         } catch (Exception e) {
@@ -304,7 +295,7 @@ public class PPtUtils {
      * @param TextBoxIndex 文本框位置编号（从0开始）
      * @return Double
      */
-    public Double getTextBoxLineHeight(@NonNull XSLFSlide slide, @NonNull int TextBoxIndex) {
+    public Double getTextBoxLineHeight(XSLFSlide slide, int TextBoxIndex) {
         try {
             return slide.getPlaceholder(TextBoxIndex).getTextHeight();
         } catch (Exception e) {
@@ -320,7 +311,7 @@ public class PPtUtils {
      * @param ParagraphIndex 段落编号（从0开始）
      * @return java.lang.String
      */
-    public String getTextBoxParagraph(@NonNull XSLFSlide slide, @NonNull int TextBoxIndex, @NonNull int ParagraphIndex) {
+    public String getTextBoxParagraph(XSLFSlide slide, int TextBoxIndex, int ParagraphIndex) {
         try {
             return slide.getPlaceholder(TextBoxIndex).getTextParagraphs().get(ParagraphIndex).getText();
         } catch (Exception e) {
@@ -336,7 +327,7 @@ public class PPtUtils {
      * @param ParagraphIndex 段落编号（从0开始）
      * @return java.lang.Double
      */
-    public Double getTextBoxParagraphSpaceBefore(@NonNull XSLFSlide slide, @NonNull int TextBoxIndex, @NonNull int ParagraphIndex) {
+    public Double getTextBoxParagraphSpaceBefore(XSLFSlide slide, int TextBoxIndex, int ParagraphIndex) {
         try {
             return slide.getPlaceholder(TextBoxIndex).getTextParagraphs().get(ParagraphIndex).getSpaceBefore();
         } catch (Exception e) {
@@ -352,7 +343,7 @@ public class PPtUtils {
      * @param ParagraphIndex 段落编号（从0开始）
      * @return java.lang.Double
      */
-    public Double getTextBoxParagraphSpaceAfter(@NonNull XSLFSlide slide, @NonNull int TextBoxIndex, @NonNull int ParagraphIndex) {
+    public Double getTextBoxParagraphSpaceAfter(XSLFSlide slide, int TextBoxIndex, int ParagraphIndex) {
         try {
             return slide.getPlaceholder(TextBoxIndex).getTextParagraphs().get(ParagraphIndex).getSpaceAfter();
         } catch (Exception e) {
@@ -368,7 +359,7 @@ public class PPtUtils {
      * @param ParagraphIndex 段落编号（从0开始）
      * @return java.lang.Double
      */
-    public Double getTextBoxParagraphLineSpace(@NonNull XSLFSlide slide, @NonNull int TextBoxIndex, @NonNull int ParagraphIndex) {
+    public Double getTextBoxParagraphLineSpace(XSLFSlide slide, int TextBoxIndex, int ParagraphIndex) {
         try {
             return slide.getPlaceholder(TextBoxIndex).getTextParagraphs().get(ParagraphIndex).getLineSpacing();
         } catch (Exception e) {
@@ -385,7 +376,7 @@ public class PPtUtils {
      * @param RawIndex       字符串编号（从0开始，类型区别主要为数字、英文字母、中文等）
      * @return java.lang.String
      */
-    public String getTextBoxRawContent(@NonNull XSLFSlide slide, @NonNull int TextBoxIndex, @NonNull int ParagraphIndex, @NonNull int RawIndex) {
+    public String getTextBoxRawContent(XSLFSlide slide, int TextBoxIndex, int ParagraphIndex, int RawIndex) {
         try {
             return slide.getPlaceholder(TextBoxIndex).getTextParagraphs().get(ParagraphIndex).getTextRuns().get(RawIndex).getRawText();
         } catch (Exception e) {
@@ -402,7 +393,7 @@ public class PPtUtils {
      * @param RawIndex       字符串编号（从0开始，类型区别主要为数字、英文字母、中文等）
      * @return java.lang.String
      */
-    public String getTextBoxRawHyperlink(@NonNull XSLFSlide slide, @NonNull int TextBoxIndex, @NonNull int ParagraphIndex, @NonNull int RawIndex) {
+    public String getTextBoxRawHyperlink(XSLFSlide slide, int TextBoxIndex, int ParagraphIndex, int RawIndex) {
         try {
             return slide.getPlaceholder(TextBoxIndex).getTextParagraphs().get(ParagraphIndex).getTextRuns().get(RawIndex).getHyperlink().getAddress();
         } catch (Exception e) {
@@ -419,7 +410,7 @@ public class PPtUtils {
      * @param RawIndex       字符串编号（从0开始，类型区别主要为数字、英文字母、中文等）
      * @return Float
      */
-    public Float getTextBoxRawFontSize(@NonNull XSLFSlide slide, @NonNull int TextBoxIndex, @NonNull int ParagraphIndex, @NonNull int RawIndex) {
+    public Float getTextBoxRawFontSize(XSLFSlide slide, int TextBoxIndex, int ParagraphIndex, int RawIndex) {
         try {
             return Float.parseFloat(new DecimalFormat("##.#").format(slide.getPlaceholder(TextBoxIndex).getTextParagraphs().get(ParagraphIndex).getTextRuns().get(RawIndex).getFontSize()));
         } catch (Exception e) {
@@ -436,7 +427,7 @@ public class PPtUtils {
      * @param RawIndex       字符串编号（从0开始，类型区别主要为数字、英文字母、中文等）
      * @return java.lang.String
      */
-    public String getTextBoxRawFontFamily(@NonNull XSLFSlide slide, @NonNull int TextBoxIndex, @NonNull int ParagraphIndex, @NonNull int RawIndex) {
+    public String getTextBoxRawFontFamily(XSLFSlide slide, int TextBoxIndex, int ParagraphIndex, int RawIndex) {
         try {
             return slide.getPlaceholder(TextBoxIndex).getTextParagraphs().get(ParagraphIndex).getTextRuns().get(RawIndex).getFontFamily();
         } catch (Exception e) {
@@ -453,7 +444,7 @@ public class PPtUtils {
      * @param RawIndex       字符串编号（从0开始，类型区别主要为数字、英文字母、中文等）
      * @return String 返回十六进制字符串
      */
-    public String getTextBoxRawFontColor(@NonNull XSLFSlide slide, @NonNull int TextBoxIndex, @NonNull int ParagraphIndex, @NonNull int RawIndex) {
+    public String getTextBoxRawFontColor(XSLFSlide slide, int TextBoxIndex, int ParagraphIndex, int RawIndex) {
         try {
             return slide.getPlaceholder(TextBoxIndex).getTextParagraphs().get(ParagraphIndex).getXmlObject().getRList().get(RawIndex).getRPr().getSolidFill().getSrgbClr().xgetVal().getStringValue();
         } catch (Exception e) {
@@ -470,7 +461,7 @@ public class PPtUtils {
      * @param RawIndex       字符串编号（从0开始，类型区别主要为数字、英文字母、中文等）
      * @return boolean
      */
-    public boolean isTextBoxRawBold(@NonNull XSLFSlide slide, @NonNull int TextBoxIndex, @NonNull int ParagraphIndex, @NonNull int RawIndex) {
+    public boolean isTextBoxRawBold(XSLFSlide slide, int TextBoxIndex, int ParagraphIndex, int RawIndex) {
         try {
             return slide.getPlaceholder(TextBoxIndex).getTextParagraphs().get(ParagraphIndex).getTextRuns().get(RawIndex).isBold();
         } catch (Exception e) {
@@ -487,7 +478,7 @@ public class PPtUtils {
      * @param RawIndex       字符串编号（从0开始，类型区别主要为数字、英文字母、中文等）
      * @return boolean
      */
-    public boolean isTextBoxRawItalic(@NonNull XSLFSlide slide, @NonNull int TextBoxIndex, @NonNull int ParagraphIndex, @NonNull int RawIndex) {
+    public boolean isTextBoxRawItalic(XSLFSlide slide, int TextBoxIndex, int ParagraphIndex, int RawIndex) {
         try {
             return slide.getPlaceholder(TextBoxIndex).getTextParagraphs().get(ParagraphIndex).getTextRuns().get(RawIndex).isItalic();
         } catch (Exception e) {
@@ -504,7 +495,7 @@ public class PPtUtils {
      * @param RawIndex       字符串编号（从0开始，类型区别主要为数字、英文字母、中文等）
      * @return boolean
      */
-    public boolean isTextBoxRawSubscript(@NonNull XSLFSlide slide, @NonNull int TextBoxIndex, @NonNull int ParagraphIndex, @NonNull int RawIndex) {
+    public boolean isTextBoxRawSubscript(XSLFSlide slide, int TextBoxIndex, int ParagraphIndex, int RawIndex) {
         try {
             return slide.getPlaceholder(TextBoxIndex).getTextParagraphs().get(ParagraphIndex).getTextRuns().get(RawIndex).isSubscript();
         } catch (Exception e) {
@@ -521,7 +512,7 @@ public class PPtUtils {
      * @param RawIndex       字符串编号（从0开始，类型区别主要为数字、英文字母、中文等）
      * @return boolean
      */
-    public boolean isTextBoxRawUnderlined(@NonNull XSLFSlide slide, @NonNull int TextBoxIndex, @NonNull int ParagraphIndex, @NonNull int RawIndex) {
+    public boolean isTextBoxRawUnderlined(XSLFSlide slide, int TextBoxIndex, int ParagraphIndex, int RawIndex) {
         try {
             return slide.getPlaceholder(TextBoxIndex).getTextParagraphs().get(ParagraphIndex).getTextRuns().get(RawIndex).isUnderlined();
         } catch (Exception e) {
@@ -530,23 +521,119 @@ public class PPtUtils {
     }
 
     /**
-     * 根据XML Path自定义获取单个幻灯片中SmartArt元素的属性
-     *
-     * @param slide 所需获取属性的幻灯片对象
-     * @param xPath XML Path
-     * @return java.util.List<java.lang.String>
+     * 返回文本框中某个段落的字符串集合
+     * @param shape 文本容器
+     * @param ParagraphIndex 字符串集合下标
+     * @return List<CTRegularTextRun>
      */
-    public java.util.List<String> getSmartArtAttributeByXpath(XSLFSlide slide, String xPath) throws IOException, DocumentException {
-        java.util.List<String> list = new ArrayList<>();
+    public List<CTRegularTextRun> getTextRun(XSLFTextShape shape, int ParagraphIndex) {
+        try {
+            return shape.getTextParagraphs().get(ParagraphIndex).getXmlObject().getRList();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 获取pptx中的各种容器对象
+     * @param pageIndex 幻灯片页码
+     * @return List<XSLFShape>
+     */
+    public List<XSLFShape> getShape(int pageIndex) {
+        try {
+            return this.getSlideShow().getSlides().get(pageIndex).getShapes();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 根据所传递的资源路径获取单个幻灯片中SmartArt元素的对应属性，
+     * 以[type:pri]键值形式存在取出包装并返回
+     *
+     * @param slide       所需获取属性的幻灯片对象
+     * @param resourceUrl 所需获取属性的资源文件路径，例：../slide1.xml,../data1.xml,../color.xml
+     * @return java.util.Map<java.lang.String, java.lang.String>
+     */
+    public Map<String, String> getSmartArtLayoutAttributes(XSLFSlide slide, String resourceUrl) throws IOException, XmlException {
+        XmlObject xmlObject;
+        XmlCursor xmlCursor;
+        String key;
+        Map<String, String> map = new HashMap<>();
         for (POIXMLDocumentPart part : slide.getRelations()) {
-            if (part.getPackagePart().getPartName().getName().startsWith(PowerPointConstants.SMART_ART_DATA_RESOURCE_URL_PREFIX)) {
+            if (part.getPackagePart().getPartName().getName().startsWith(resourceUrl)) {
+                xmlObject = XmlObject.Factory.parse(part.getPackagePart().getInputStream());
+                xmlCursor = xmlObject.newCursor();
+                while (xmlCursor.hasNextToken()) {
+                    if (PowerPointConstants.SMART_ART_TYPE_KEY.equals(String.valueOf(xmlCursor.getName()))) {
+                        key = xmlCursor.getTextValue();
+                        xmlCursor.toNextToken();
+                        if (PowerPointConstants.SMART_ART_PRIMARY_KEY.equals(String.valueOf(xmlCursor.getName()))) {
+                            map.put(key, xmlCursor.getTextValue());
+                            if (!xmlCursor.hasNextToken()) {
+                                break;
+                            }
+                        }
+                    }
+                    xmlCursor.toNextToken();
+                }
+            }
+        }
+        return map;
+    }
+
+    /**
+     * 根据单个幻灯片获取其中的形状属性并包装为Shape对象
+     *
+     * @param slide 所需查找形状属性的幻灯片
+     * @return java.util.List<bean.Video>
+     */
+    public List<ShapeView> getShape(XSLFSlide slide) throws IOException, DocumentException {
+        ShapeView shapeView;
+        Object attribute;
+        List<ShapeView> list = new ArrayList<>();
+        for (POIXMLDocumentPart part : slide.getSlideShow().getRelations()) {
+            if (part.getPackagePart().getPartName().getName().startsWith(PowerPointConstants.SLIDE_RESOURCE_URL_PREFIX + slide.getSlideNumber())) {
                 SAXReader reader = new SAXReader();
                 Document document = reader.read(part.getPackagePart().getInputStream());
                 Element root = document.getRootElement();
-                root.addNamespace("r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships");
-                java.util.List attributes = root.selectNodes(xPath);
-                for (Object attr : attributes) {
-                    list.add(((Attribute) attr).getValue());
+                List elements = root.selectNodes("//" + PowerPointConstants.CRUCIAL_NODE_XML_TAG);
+                for (Object o : elements) {
+                    shapeView = new ShapeView();
+                    Element element = (Element) o;
+                    attribute = element.selectSingleNode(PowerPointConstants.ID_ATTRIBUTE_KEY);
+                    if (attribute != null) {
+                        shapeView.setId(((Attribute) attribute).getValue());
+                    }
+                    attribute = element.selectSingleNode(PowerPointConstants.NAME_ATTRIBUTE_KEY);
+                    if (attribute != null && StringUtils.isNotBlank(((Attribute) attribute).getValue())) {
+                        shapeView.setName(((Attribute) attribute).getValue());
+                    } else {
+                        continue;
+                    }
+                    String text = getShapeElementSpliceText(element);
+                    if (StringUtils.isNotBlank(text)) {
+                        shapeView.setText(text);
+                    }
+                    attribute = element.selectSingleNode(PowerPointConstants.SHAPE_OUTLINE_COLOR_VALUE_XPATH);
+                    if (attribute != null) {
+                        shapeView.setLnVal(((Attribute) attribute).getValue());
+                    }
+                    attribute = element.selectSingleNode(PowerPointConstants.SHAPE_FILL_COLOR_VALUE_XPATH);
+                    if (attribute != null) {
+                        shapeView.setFillVal(((Attribute) attribute).getValue());
+                    }
+                    attribute = element.selectSingleNode(PowerPointConstants.SHAPE_EFFECT_COLOR_VALUE_XPATH);
+                    if (attribute != null) {
+                        shapeView.setEffectVal(((Attribute) attribute).getValue());
+                    }
+                    attribute = element.selectSingleNode(PowerPointConstants.SHAPE_FONT_COLOR_VALUE_XPATH);
+                    if (attribute != null) {
+                        shapeView.setFontVal(((Attribute) attribute).getValue());
+                    }
+                    if (shapeView.isNotBlank()) {
+                        list.add(shapeView);
+                    }
                 }
             }
         }
@@ -554,63 +641,20 @@ public class PPtUtils {
     }
 
     /**
-     * 根据资源ID和幻灯片对象获取相对应的SmartArt资源Target并返回路径
+     * 根据Shape节点对象获取Shape中拼接文本信息
      *
-     * @param slide 所需获取的幻灯片对象
-     * @param id    所需获取的资源ID
+     * @param shapeElement 所需获取文本信息的Shape Element节点对象
      * @return java.lang.String
      */
-    public String getSmartArtRelationshipTarget(XSLFSlide slide, String id) {
-        for (POIXMLDocumentPart part : slide.getRelations()) {
-            if (part.getPackagePart().getPartName().getName().startsWith(PowerPointConstants.SMART_ART_DATA_RESOURCE_URL_PREFIX)) {
-                POIXMLDocumentPart documentPart = part.getRelationById(id);
-                if (documentPart != null) {
-                    return documentPart.getPackagePart().getPartName().getName();
-                }
+    public String getShapeElementSpliceText(Element shapeElement) {
+        List elements = shapeElement.selectNodes("../..//a:t");
+        StringBuffer stringBuffer = new StringBuffer();
+        for (Object element : elements) {
+            if (element instanceof Element) {
+                stringBuffer.append(((Element) element).getText());
             }
         }
-        return null;
-    }
-
-    /**
-     * 获取单个幻灯片中SmartArt元素的超链接属性并包装为HyperLink实体类对象
-     *
-     * @param slide 所需获取超链接属性的幻灯片对象
-     * @return java.util.List<bean.HyperLink>
-     */
-    public java.util.List<HyperLink> getSmartArtHyperLink(XSLFSlide slide) throws IOException, DocumentException {
-        java.util.List<HyperLink> links = new ArrayList<>();
-        Attribute attr;
-        HyperLink hyperLink;
-        for (POIXMLDocumentPart part : slide.getRelations()) {
-            if (part.getPackagePart().getPartName().getName().startsWith(PowerPointConstants.SMART_ART_DATA_RESOURCE_URL_PREFIX)) {
-                SAXReader reader = new SAXReader();
-                Document document = reader.read(part.getPackagePart().getInputStream());
-                Element root = document.getRootElement();
-                // 根据"/"路径获取元素
-                java.util.List elements = root.selectNodes("//" + PowerPointConstants.SMART_ART_HYPERLINK_XML_TAG);
-                for (Object element : elements) {
-                    hyperLink = new HyperLink();
-                    attr = ((Attribute) ((Element) element).selectSingleNode(PowerPointConstants.SMART_ART_HYPERLINK_RID_NAME));
-                    if (StringUtils.isNotBlank(String.valueOf(attr.getValue()))) {
-                        hyperLink.setId(attr.getValue());
-                    }
-                    attr = ((Attribute) ((Element) element).selectSingleNode(PowerPointConstants.SMART_ART_HYPERLINK_ACTION_NAME));
-                    if (attr != null) {
-                        hyperLink.setLinkAction(attr.getValue());
-                    }
-                    Iterator iterator = ((Element) element).getParent().getParent().elementIterator();
-                    if (iterator.hasNext()) {
-                        iterator.next();
-                        hyperLink.setLinkText(((Element) iterator.next()).getText());
-                    }
-                    if (hyperLink.isNotBlank()) {
-                        links.add(hyperLink);
-                    }
-                }
-            }
-        }
-        return links;
+        return String.valueOf(stringBuffer);
     }
 
     /**
@@ -699,92 +743,23 @@ public class PPtUtils {
     }
 
     /**
-     * 根据所传递的资源路径获取单个幻灯片中SmartArt元素的对应属性，
-     * 以[type:pri]键值形式存在取出包装并返回
+     * 根据XML Path自定义获取单个幻灯片中SmartArt元素的属性
      *
-     * @param slide       所需获取属性的幻灯片对象
-     * @param resourceUrl 所需获取属性的资源文件路径，例：../slide1.xml,../data1.xml,../color.xml
-     * @return java.util.Map<java.lang.String, java.lang.String>
+     * @param slide 所需获取属性的幻灯片对象
+     * @param xPath XML Path
+     * @return java.util.List<java.lang.String>
      */
-    public Map<String, String> getSmartArtLayoutAttributes(XSLFSlide slide, String resourceUrl) throws IOException, XmlException {
-        XmlObject xmlObject;
-        XmlCursor xmlCursor;
-        String key;
-        Map<String, String> map = new HashMap<>();
+    public java.util.List<String> getSmartArtAttributeByXpath(XSLFSlide slide, String xPath) throws IOException, DocumentException {
+        java.util.List<String> list = new ArrayList<>();
         for (POIXMLDocumentPart part : slide.getRelations()) {
-            if (part.getPackagePart().getPartName().getName().startsWith(resourceUrl)) {
-                xmlObject = XmlObject.Factory.parse(part.getPackagePart().getInputStream());
-                xmlCursor = xmlObject.newCursor();
-                while (xmlCursor.hasNextToken()) {
-                    if (PowerPointConstants.SMART_ART_TYPE_KEY.equals(String.valueOf(xmlCursor.getName()))) {
-                        key = xmlCursor.getTextValue();
-                        xmlCursor.toNextToken();
-                        if (PowerPointConstants.SMART_ART_PRIMARY_KEY.equals(String.valueOf(xmlCursor.getName()))) {
-                            map.put(key, xmlCursor.getTextValue());
-                            if (!xmlCursor.hasNextToken()) {
-                                break;
-                            }
-                        }
-                    }
-                    xmlCursor.toNextToken();
-                }
-            }
-        }
-        return map;
-    }
-
-    /**
-     * 根据单个幻灯片获取其中的形状属性并包装为Shape对象
-     *
-     * @param slide 所需查找形状属性的幻灯片
-     * @return java.util.List<bean.Video>
-     */
-    public List<Shape> getShape(XSLFSlide slide) throws IOException, DocumentException {
-        Shape shape;
-        Object attribute;
-        List<Shape> list = new ArrayList<>();
-        for (POIXMLDocumentPart part : slide.getSlideShow().getRelations()) {
-            if (part.getPackagePart().getPartName().getName().startsWith(PowerPointConstants.SLIDE_RESOURCE_URL_PREFIX + slide.getSlideNumber())) {
+            if (part.getPackagePart().getPartName().getName().startsWith(PowerPointConstants.SMART_ART_DATA_RESOURCE_URL_PREFIX)) {
                 SAXReader reader = new SAXReader();
                 Document document = reader.read(part.getPackagePart().getInputStream());
                 Element root = document.getRootElement();
-                List elements = root.selectNodes("//" + PowerPointConstants.CRUCIAL_NODE_XML_TAG);
-                for (Object o : elements) {
-                    shape = new Shape();
-                    Element element = (Element) o;
-                    attribute = element.selectSingleNode(PowerPointConstants.ID_ATTRIBUTE_KEY);
-                    if (attribute != null) {
-                        shape.setId(((Attribute) attribute).getValue());
-                    }
-                    attribute = element.selectSingleNode(PowerPointConstants.NAME_ATTRIBUTE_KEY);
-                    if (attribute != null && StringUtils.isNotBlank(((Attribute) attribute).getValue())) {
-                        shape.setName(((Attribute) attribute).getValue());
-                    } else {
-                        continue;
-                    }
-                    String text = getShapeElementSpliceText(element);
-                    if (StringUtils.isNotBlank(text)) {
-                        shape.setText(text);
-                    }
-                    attribute = element.selectSingleNode(PowerPointConstants.SHAPE_OUTLINE_COLOR_VALUE_XPATH);
-                    if (attribute != null) {
-                        shape.setLnVal(((Attribute) attribute).getValue());
-                    }
-                    attribute = element.selectSingleNode(PowerPointConstants.SHAPE_FILL_COLOR_VALUE_XPATH);
-                    if (attribute != null) {
-                        shape.setFillVal(((Attribute) attribute).getValue());
-                    }
-                    attribute = element.selectSingleNode(PowerPointConstants.SHAPE_EFFECT_COLOR_VALUE_XPATH);
-                    if (attribute != null) {
-                        shape.setEffectVal(((Attribute) attribute).getValue());
-                    }
-                    attribute = element.selectSingleNode(PowerPointConstants.SHAPE_FONT_COLOR_VALUE_XPATH);
-                    if (attribute != null) {
-                        shape.setFontVal(((Attribute) attribute).getValue());
-                    }
-                    if (shape.isNotBlank()) {
-                        list.add(shape);
-                    }
+                root.addNamespace("r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+                java.util.List attributes = root.selectNodes(xPath);
+                for (Object attr : attributes) {
+                    list.add(((Attribute) attr).getValue());
                 }
             }
         }
@@ -792,20 +767,44 @@ public class PPtUtils {
     }
 
     /**
-     * 根据Shape节点对象获取Shape中拼接文本信息
+     * 获取单个幻灯片中SmartArt元素的超链接属性并包装为HyperLink实体类对象
      *
-     * @param shapeElement 所需获取文本信息的Shape Element节点对象
-     * @return java.lang.String
+     * @param slide 所需获取超链接属性的幻灯片对象
+     * @return java.util.List<bean.HyperLink>
      */
-    public String getShapeElementSpliceText(Element shapeElement) {
-        List elements = shapeElement.selectNodes("../..//a:t");
-        StringBuffer stringBuffer = new StringBuffer();
-        for (Object element : elements) {
-            if (element instanceof Element) {
-                stringBuffer.append(((Element) element).getText());
+    public java.util.List<HyperLink> getSmartArtHyperLink(XSLFSlide slide) throws IOException, DocumentException {
+        java.util.List<HyperLink> links = new ArrayList<>();
+        Attribute attr;
+        HyperLink hyperLink;
+        for (POIXMLDocumentPart part : slide.getRelations()) {
+            if (part.getPackagePart().getPartName().getName().startsWith(PowerPointConstants.SMART_ART_DATA_RESOURCE_URL_PREFIX)) {
+                SAXReader reader = new SAXReader();
+                Document document = reader.read(part.getPackagePart().getInputStream());
+                Element root = document.getRootElement();
+                // 根据"/"路径获取元素
+                java.util.List elements = root.selectNodes("//" + PowerPointConstants.SMART_ART_HYPERLINK_XML_TAG);
+                for (Object element : elements) {
+                    hyperLink = new HyperLink();
+                    attr = ((Attribute) ((Element) element).selectSingleNode(PowerPointConstants.SMART_ART_HYPERLINK_RID_NAME));
+                    if (StringUtils.isNotBlank(String.valueOf(attr.getValue()))) {
+                        hyperLink.setId(attr.getValue());
+                    }
+                    attr = ((Attribute) ((Element) element).selectSingleNode(PowerPointConstants.SMART_ART_HYPERLINK_ACTION_NAME));
+                    if (attr != null) {
+                        hyperLink.setLinkAction(attr.getValue());
+                    }
+                    Iterator iterator = ((Element) element).getParent().getParent().elementIterator();
+                    if (iterator.hasNext()) {
+                        iterator.next();
+                        hyperLink.setLinkText(((Element) iterator.next()).getText());
+                    }
+                    if (hyperLink.isNotBlank()) {
+                        links.add(hyperLink);
+                    }
+                }
             }
         }
-        return String.valueOf(stringBuffer);
+        return links;
     }
 
     /**
@@ -906,5 +905,84 @@ public class PPtUtils {
         }
         return null;
     }
+
+    /**
+     * 返回文本框中某段落中某串字符的十六进制颜色
+     * @param textRunList 某个段落的字符串集合
+     * @param RawIndex 字符串集合下标
+     * @return String
+     */
+    public String getTextRunFontColor(List<CTRegularTextRun> textRunList, int RawIndex) {
+        try {
+            return textRunList.get(RawIndex).getRPr().getSolidFill().getSrgbClr().xgetVal().getStringValue();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
+     * 返回文本框中某段落中某串字符的字体样式
+     * @param textRunList 某个段落的字符串集合
+     * @param RawIndex 字符串集合下标
+     * @return String
+     */
+    public String getTextRunFontStyle(List<CTRegularTextRun> textRunList, int RawIndex) {
+        try {
+            return textRunList.get(RawIndex).getRPr().getLatin().getTypeface();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
+     * 返回文本框中某段落中某串字符的字体大小
+     * @param textRunList 某个段落的字符串集合
+     * @param RawIndex 字符串集合下标
+     * @return String
+     */
+    public String getTextRunFontSize(List<CTRegularTextRun> textRunList, int RawIndex) {
+        try {
+            int fontSize = textRunList.get(RawIndex).getRPr().getSz();
+            if(fontSize == 0) {
+                return "";
+            }
+            return String.valueOf(fontSize / 100);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
+     * 获取包含节的结点集合
+     *
+     * @return NodeList
+     */
+    public NodeList getSectionNodeList() {
+        try {
+            return this.getSlideShow().getCTPresentation().getDomNode().getLastChild().getFirstChild().getFirstChild().getChildNodes();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 获取每个节中所包含的幻灯片数量
+     *
+     * @param length 节数量
+     * @return int[]
+     */
+    public int[] getPerSectionSlideCount(int length) {
+        try {
+            NodeList nodeList = this.getSectionNodeList();
+            int[] temp = new int[length];
+            for (int i = 0; i < length; i++) {
+                temp[i] = nodeList.item(i).getFirstChild().getChildNodes().getLength();
+            }
+            return temp;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 
 }

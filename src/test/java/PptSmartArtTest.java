@@ -1,8 +1,8 @@
 import com.gzmut.office.bean.Font;
 import com.gzmut.office.bean.HyperLink;
 import com.gzmut.office.enums.PowerPointConstants;
-import com.gzmut.office.util.PPtUtils;
 
+import com.gzmut.office.util.PptUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ooxml.POIXMLDocumentPart;
 import org.apache.poi.xslf.usermodel.XMLSlideShow;
@@ -72,7 +72,7 @@ public class PptSmartArtTest {
     /**
      * PowerPoint file test tools class
      */
-    private PPtUtils pptUtils = new PPtUtils(fileName);
+    private PptUtils pptUtils = new PptUtils(fileName);
 
     @Test
     public void test() throws IOException, XmlException, DocumentException {

@@ -20,5 +20,5 @@ public class Location {
     /** 定位属性 */
     @Getter
     @Setter
-    private String lp,ls,lo,lg,lr;
+    private String lp,ls,lo;
 }

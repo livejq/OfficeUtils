@@ -11,7 +11,7 @@ import lombok.experimental.Accessors;
  */
 @Data
 @Accessors(chain = true)
-public class Shape {
+public class ShapeView {
     /** 形状元素自带ID */
     private String id;
 

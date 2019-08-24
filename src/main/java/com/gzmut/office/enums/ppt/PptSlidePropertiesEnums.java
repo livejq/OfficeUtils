@@ -14,28 +14,31 @@ import java.util.logging.Level;
  */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public enum PPtSlidePropertiesEnums {
+public enum PptSlidePropertiesEnums {
 
     /** 背景颜色 */
     BACKGROUND_COLOR(1, "BACKGROUND_COLOR"),
 
     /** 切入方式 */
-    SLIP_STYLE(2, "SLIP_STYLE"),
+    SWITCH_STYLE(2, "SWITCH_STYLE"),
 
     /** 主题 */
     THEME(3, "THEME"),
 
-    /** 布局类型 */
+    /** 板式类型 */
     LAYOUT_STYLE(4, "LAYOUT_STYLE"),
 
+    /** 母版名称 */
+    LAYOUT_NAME(5, "LAYOUT_NAME"),
+
     /** 尺寸 */
-    SIZE(5, "SIZE"),
+    SIZE(6, "SIZE"),
 
     /** 标题 */
-    TITLE(6, "TITLE"),
+    TITLE(7, "TITLE"),
 
-    /** 标题 */
-    COUNT(7, "COUNT");
+    /** 幻灯片数量 */
+    COUNT(8, "COUNT");
 
     private final Integer id;
     private final String property;
