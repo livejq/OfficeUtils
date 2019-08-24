@@ -1,6 +1,6 @@
 package com.gzmut.office.util;
 
-import com.gzmut.office.bean.ShapeView;
+import com.gzmut.office.bean.*;
 import com.gzmut.office.enums.OfficeEnums;
 import com.gzmut.office.enums.PowerPointConstants;
 import lombok.Getter;
@@ -11,6 +11,9 @@ import org.apache.poi.xslf.usermodel.XMLSlideShow;
 import org.apache.poi.xslf.usermodel.XSLFShape;
 import org.apache.poi.xslf.usermodel.XSLFSlide;
 import org.apache.poi.xslf.usermodel.XSLFTextShape;
+import org.apache.xmlbeans.XmlCursor;
+import org.apache.xmlbeans.XmlException;
+import org.apache.xmlbeans.XmlObject;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -19,12 +22,12 @@ import org.dom4j.io.SAXReader;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTRegularTextRun;
 import org.w3c.dom.NodeList;
 
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Color;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * MS Office 2010 pptx
@@ -545,6 +548,41 @@ public class PptUtils {
     }
 
     /**
+     * 根据所传递的资源路径获取单个幻灯片中SmartArt元素的对应属性，
+     * 以[type:pri]键值形式存在取出包装并返回
+     *
+     * @param slide       所需获取属性的幻灯片对象
+     * @param resourceUrl 所需获取属性的资源文件路径，例：../slide1.xml,../data1.xml,../color.xml
+     * @return java.util.Map<java.lang.String, java.lang.String>
+     */
+    public Map<String, String> getSmartArtLayoutAttributes(XSLFSlide slide, String resourceUrl) throws IOException, XmlException {
+        XmlObject xmlObject;
+        XmlCursor xmlCursor;
+        String key;
+        Map<String, String> map = new HashMap<>();
+        for (POIXMLDocumentPart part : slide.getRelations()) {
+            if (part.getPackagePart().getPartName().getName().startsWith(resourceUrl)) {
+                xmlObject = XmlObject.Factory.parse(part.getPackagePart().getInputStream());
+                xmlCursor = xmlObject.newCursor();
+                while (xmlCursor.hasNextToken()) {
+                    if (PowerPointConstants.SMART_ART_TYPE_KEY.equals(String.valueOf(xmlCursor.getName()))) {
+                        key = xmlCursor.getTextValue();
+                        xmlCursor.toNextToken();
+                        if (PowerPointConstants.SMART_ART_PRIMARY_KEY.equals(String.valueOf(xmlCursor.getName()))) {
+                            map.put(key, xmlCursor.getTextValue());
+                            if (!xmlCursor.hasNextToken()) {
+                                break;
+                            }
+                        }
+                    }
+                    xmlCursor.toNextToken();
+                }
+            }
+        }
+        return map;
+    }
+
+    /**
      * 根据单个幻灯片获取其中的形状属性并包装为Shape对象
      *
      * @param slide 所需查找形状属性的幻灯片
@@ -617,6 +655,255 @@ public class PptUtils {
             }
         }
         return String.valueOf(stringBuffer);
+    }
+
+    /**
+     * 获取单个幻灯片中SmartArt元素的字体属性如下（Set去重）
+     *
+     * @param slide 所需获取字体属性的幻灯片
+     * @return java.util.HashSet<bean.Font>
+     */
+    public HashSet<Font> getSmartArtFontStyle(XSLFSlide slide) throws IOException, DocumentException {
+        HashSet<Font> set = new HashSet<>();
+        Font font;
+        Attribute attr;
+        for (POIXMLDocumentPart part : slide.getRelations()) {
+            if (part.getPackagePart().getPartName().getName().startsWith(PowerPointConstants.SMART_ART_DATA_RESOURCE_URL_PREFIX)) {
+                SAXReader reader = new SAXReader();
+                Document document = reader.read(part.getPackagePart().getInputStream());
+                Element root = document.getRootElement();
+                // 根据"/"路径获取元素
+                List elements = root.selectNodes("//" + PowerPointConstants.SMART_ART_TEXT_NODE_TAG);
+                for (Object element : elements) {
+                    font = new Font();
+                    attr = ((Attribute) ((Element) element).selectSingleNode(PowerPointConstants.SMART_ART_TEXT_EA_STYLE_XPATH));
+                    if (attr != null) {
+                        font.setEaStyle(attr.getValue());
+                    }
+                    attr = ((Attribute) ((Element) element).selectSingleNode(PowerPointConstants.SMART_ART_TEXT_LATIN_STYLE_XPATH));
+                    if (attr != null) {
+                        font.setLatinStyle(attr.getValue());
+                    }
+                    attr = ((Attribute) ((Element) element).selectSingleNode(PowerPointConstants.SMART_ART_TEXT_SIZE_NAME));
+                    if (attr != null) {
+                        font.setSize(attr.getValue());
+                    }
+                    attr = ((Attribute) ((Element) element).selectSingleNode(PowerPointConstants.SMART_ART_TEXT_COLOR_XPATH));
+                    if (attr != null) {
+                        font.setColor(attr.getValue());
+                    }
+                    attr = ((Attribute) ((Element) element).selectSingleNode(PowerPointConstants.SMART_ART_TEXT_BOLD_NAME));
+                    if (attr != null) {
+                        font.setBold(attr.getValue());
+                    }
+                    attr = ((Attribute) ((Element) element).selectSingleNode(PowerPointConstants.SMART_ART_TEXT_TILT_NAME));
+                    if (attr != null) {
+                        font.setTilt(attr.getValue());
+                    }
+                    attr = ((Attribute) ((Element) element).selectSingleNode(PowerPointConstants.SMART_ART_TEXT_UNDERLINE_NAME));
+                    if (attr != null) {
+                        font.setUnderline(attr.getValue());
+                    }
+                    attr = ((Attribute) ((Element) element).selectSingleNode(PowerPointConstants.SMART_ART_TEXT_STRIKE_NAME));
+                    if (attr != null) {
+                        font.setStrike(attr.getValue());
+                    }
+                    if (font.isNotBlank()) {
+                        set.add(font);
+                    }
+                }
+            }
+        }
+        return set;
+    }
+
+    /**
+     * 获取单个幻灯片中SmartArt元素的总拼接文本内容
+     *
+     * @param slide 所需获取文本内容的幻灯片对象
+     * @return java.lang.String
+     */
+    public String getSmartArtSpliceText(XSLFSlide slide) throws IOException, XmlException {
+        StringBuffer stringBuffer = new StringBuffer();
+        XmlObject xmlObject;
+        XmlCursor xmlCursor;
+        for (POIXMLDocumentPart part : slide.getRelations()) {
+            if (part.getPackagePart().getPartName().getName().startsWith(PowerPointConstants.SMART_ART_DATA_RESOURCE_URL_PREFIX)) {
+                xmlObject = XmlObject.Factory.parse(part.getPackagePart().getInputStream());
+                xmlCursor = xmlObject.newCursor();
+                while (xmlCursor.hasNextToken()) {
+                    if (xmlCursor.isText()) {
+                        stringBuffer.append(xmlCursor.getTextValue());
+                    }
+                    xmlCursor.toNextToken();
+                }
+            }
+        }
+        return String.valueOf(stringBuffer);
+    }
+
+    /**
+     * 根据XML Path自定义获取单个幻灯片中SmartArt元素的属性
+     *
+     * @param slide 所需获取属性的幻灯片对象
+     * @param xPath XML Path
+     * @return java.util.List<java.lang.String>
+     */
+    public java.util.List<String> getSmartArtAttributeByXpath(XSLFSlide slide, String xPath) throws IOException, DocumentException {
+        java.util.List<String> list = new ArrayList<>();
+        for (POIXMLDocumentPart part : slide.getRelations()) {
+            if (part.getPackagePart().getPartName().getName().startsWith(PowerPointConstants.SMART_ART_DATA_RESOURCE_URL_PREFIX)) {
+                SAXReader reader = new SAXReader();
+                Document document = reader.read(part.getPackagePart().getInputStream());
+                Element root = document.getRootElement();
+                root.addNamespace("r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+                java.util.List attributes = root.selectNodes(xPath);
+                for (Object attr : attributes) {
+                    list.add(((Attribute) attr).getValue());
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 获取单个幻灯片中SmartArt元素的超链接属性并包装为HyperLink实体类对象
+     *
+     * @param slide 所需获取超链接属性的幻灯片对象
+     * @return java.util.List<bean.HyperLink>
+     */
+    public java.util.List<HyperLink> getSmartArtHyperLink(XSLFSlide slide) throws IOException, DocumentException {
+        java.util.List<HyperLink> links = new ArrayList<>();
+        Attribute attr;
+        HyperLink hyperLink;
+        for (POIXMLDocumentPart part : slide.getRelations()) {
+            if (part.getPackagePart().getPartName().getName().startsWith(PowerPointConstants.SMART_ART_DATA_RESOURCE_URL_PREFIX)) {
+                SAXReader reader = new SAXReader();
+                Document document = reader.read(part.getPackagePart().getInputStream());
+                Element root = document.getRootElement();
+                // 根据"/"路径获取元素
+                java.util.List elements = root.selectNodes("//" + PowerPointConstants.SMART_ART_HYPERLINK_XML_TAG);
+                for (Object element : elements) {
+                    hyperLink = new HyperLink();
+                    attr = ((Attribute) ((Element) element).selectSingleNode(PowerPointConstants.SMART_ART_HYPERLINK_RID_NAME));
+                    if (StringUtils.isNotBlank(String.valueOf(attr.getValue()))) {
+                        hyperLink.setId(attr.getValue());
+                    }
+                    attr = ((Attribute) ((Element) element).selectSingleNode(PowerPointConstants.SMART_ART_HYPERLINK_ACTION_NAME));
+                    if (attr != null) {
+                        hyperLink.setLinkAction(attr.getValue());
+                    }
+                    Iterator iterator = ((Element) element).getParent().getParent().elementIterator();
+                    if (iterator.hasNext()) {
+                        iterator.next();
+                        hyperLink.setLinkText(((Element) iterator.next()).getText());
+                    }
+                    if (hyperLink.isNotBlank()) {
+                        links.add(hyperLink);
+                    }
+                }
+            }
+        }
+        return links;
+    }
+
+    /**
+     * 根据单个幻灯片获取其中的声音属性并包装为Sound对象
+     *
+     * @param slide 所需查找声音属性的幻灯片
+     * @return java.util.List<bean.Sound>
+     */
+    public List<Sound> getSound(XSLFSlide slide) throws IOException, DocumentException {
+        Sound sound;
+        Object attribute;
+        List<Sound> list = new ArrayList<>();
+        for (POIXMLDocumentPart part : slide.getSlideShow().getRelations()) {
+            if (part.getPackagePart().getPartName().getName().startsWith(PowerPointConstants.SLIDE_RESOURCE_URL_PREFIX + slide.getSlideNumber())) {
+                SAXReader reader = new SAXReader();
+                Document document = reader.read(part.getPackagePart().getInputStream());
+                Element root = document.getRootElement();
+                List elements = root.selectNodes("//" + PowerPointConstants.SLIDE_SOUND_FILE_XML_TAG);
+                for (int index = 0; index < elements.size(); index++) {
+                    sound = new Sound();
+                    Element element = (Element) elements.get(index);
+                    sound.setId(getMediaIdByElement(element));
+                    sound.setName(getMediaNameByElement(element));
+                    attribute = element.selectSingleNode("//" + PowerPointConstants.SLIDE_SOUND_NODE_XML_TAG + "[" + index + 1 + "]/" + PowerPointConstants.SLIDE_SOUND_SHOW_WHEN_STOP_XML_ATTRIBUTE);
+                    if (attribute != null) {
+                        sound.setShowWhenStopped(((Attribute) attribute).getValue());
+                    }
+                    sound.setUrl(part.getRelationById(sound.getId()).getPackagePart().getPartName().getName());
+                    if (sound.isNotBlank()) {
+                        list.add(sound);
+                    }
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 根据单个幻灯片获取其中的视频属性并包装为Video对象
+     *
+     * @param slide 所需查找视频属性的幻灯片
+     * @return java.util.List<bean.Video>
+     */
+    public List<Video> getVideo(XSLFSlide slide) throws IOException, DocumentException {
+        Video video;
+        Object attribute;
+        List<Video> list = new ArrayList<>();
+        for (POIXMLDocumentPart part : slide.getSlideShow().getRelations()) {
+            if (part.getPackagePart().getPartName().getName().startsWith(PowerPointConstants.SLIDE_RESOURCE_URL_PREFIX + slide.getSlideNumber())) {
+                SAXReader reader = new SAXReader();
+                Document document = reader.read(part.getPackagePart().getInputStream());
+                Element root = document.getRootElement();
+                List elements = root.selectNodes("//" + PowerPointConstants.SLIDE_VIDEO_XML_TAG);
+                for (Object o : elements) {
+                    video = new Video();
+                    Element element = (Element) o;
+                    video.setId(getMediaIdByElement(element));
+                    video.setName(getMediaNameByElement(element));
+                    attribute = element.selectObject("../../..//a:blip/@r:embed");
+                    if (attribute != null) {
+                        video.setCoverId(((Attribute) attribute).getValue());
+                    }
+                    video.setUrl(part.getRelationById(video.getId()).getPackagePart().getPartName().getName());
+                    video.setCoverUrl(part.getRelationById(video.getCoverId()).getPackagePart().getPartName().getName());
+                    if (video.isNotBlank()) {
+                        list.add(video);
+                    }
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 根据Media媒体节点对象获取其ID
+     *
+     * @param mediaElement 所需获取ID的Media Element节点对象
+     * @return java.lang.String
+     */
+    private String getMediaIdByElement(Element mediaElement){
+        Object attribute = mediaElement.selectObject(PowerPointConstants.SLIDE_RESOURCE_LINK_ID_XML_ATTRIBUTE);
+        if(attribute != null){
+            return ((Attribute) attribute).getValue();
+        }
+        return null;
+    }
+
+    /**
+     * 根据Media媒体节点对象获取其Name
+     *
+     * @param mediaElement 所需获取Name的Media Element节点对象
+     * @return java.lang.String
+     */
+    private String getMediaNameByElement(Element mediaElement){
+        Object attribute = mediaElement.selectObject("../../"+ PowerPointConstants.CRUCIAL_NODE_XML_TAG+"/"+PowerPointConstants.NAME_ATTRIBUTE_KEY);
+        if(attribute != null){
+            return ((Attribute) attribute).getValue();
+        }
+        return null;
     }
 
     /**
