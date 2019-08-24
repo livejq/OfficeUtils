@@ -1,11 +1,21 @@
 package com.gzmut.office.util;
 
+import com.gzmut.office.bean.ShapeView;
 import com.gzmut.office.enums.OfficeEnums;
-import com.sun.org.apache.xml.internal.resolver.readers.ExtendedXMLCatalogReader;
+import com.gzmut.office.enums.PowerPointConstants;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
-import org.apache.poi.xslf.usermodel.*;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ooxml.POIXMLDocumentPart;
+import org.apache.poi.xslf.usermodel.XMLSlideShow;
+import org.apache.poi.xslf.usermodel.XSLFShape;
+import org.apache.poi.xslf.usermodel.XSLFSlide;
+import org.apache.poi.xslf.usermodel.XSLFTextShape;
+import org.dom4j.Attribute;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTRegularTextRun;
 import org.w3c.dom.NodeList;
 
@@ -13,6 +23,7 @@ import java.awt.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -531,6 +542,81 @@ public class PptUtils {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    /**
+     * 根据单个幻灯片获取其中的形状属性并包装为Shape对象
+     *
+     * @param slide 所需查找形状属性的幻灯片
+     * @return java.util.List<bean.Video>
+     */
+    public List<ShapeView> getShape(XSLFSlide slide) throws IOException, DocumentException {
+        ShapeView shapeView;
+        Object attribute;
+        List<ShapeView> list = new ArrayList<>();
+        for (POIXMLDocumentPart part : slide.getSlideShow().getRelations()) {
+            if (part.getPackagePart().getPartName().getName().startsWith(PowerPointConstants.SLIDE_RESOURCE_URL_PREFIX + slide.getSlideNumber())) {
+                SAXReader reader = new SAXReader();
+                Document document = reader.read(part.getPackagePart().getInputStream());
+                Element root = document.getRootElement();
+                List elements = root.selectNodes("//" + PowerPointConstants.CRUCIAL_NODE_XML_TAG);
+                for (Object o : elements) {
+                    shapeView = new ShapeView();
+                    Element element = (Element) o;
+                    attribute = element.selectSingleNode(PowerPointConstants.ID_ATTRIBUTE_KEY);
+                    if (attribute != null) {
+                        shapeView.setId(((Attribute) attribute).getValue());
+                    }
+                    attribute = element.selectSingleNode(PowerPointConstants.NAME_ATTRIBUTE_KEY);
+                    if (attribute != null && StringUtils.isNotBlank(((Attribute) attribute).getValue())) {
+                        shapeView.setName(((Attribute) attribute).getValue());
+                    } else {
+                        continue;
+                    }
+                    String text = getShapeElementSpliceText(element);
+                    if (StringUtils.isNotBlank(text)) {
+                        shapeView.setText(text);
+                    }
+                    attribute = element.selectSingleNode(PowerPointConstants.SHAPE_OUTLINE_COLOR_VALUE_XPATH);
+                    if (attribute != null) {
+                        shapeView.setLnVal(((Attribute) attribute).getValue());
+                    }
+                    attribute = element.selectSingleNode(PowerPointConstants.SHAPE_FILL_COLOR_VALUE_XPATH);
+                    if (attribute != null) {
+                        shapeView.setFillVal(((Attribute) attribute).getValue());
+                    }
+                    attribute = element.selectSingleNode(PowerPointConstants.SHAPE_EFFECT_COLOR_VALUE_XPATH);
+                    if (attribute != null) {
+                        shapeView.setEffectVal(((Attribute) attribute).getValue());
+                    }
+                    attribute = element.selectSingleNode(PowerPointConstants.SHAPE_FONT_COLOR_VALUE_XPATH);
+                    if (attribute != null) {
+                        shapeView.setFontVal(((Attribute) attribute).getValue());
+                    }
+                    if (shapeView.isNotBlank()) {
+                        list.add(shapeView);
+                    }
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 根据Shape节点对象获取Shape中拼接文本信息
+     *
+     * @param shapeElement 所需获取文本信息的Shape Element节点对象
+     * @return java.lang.String
+     */
+    public String getShapeElementSpliceText(Element shapeElement) {
+        List elements = shapeElement.selectNodes("../..//a:t");
+        StringBuffer stringBuffer = new StringBuffer();
+        for (Object element : elements) {
+            if (element instanceof Element) {
+                stringBuffer.append(((Element) element).getText());
+            }
+        }
+        return String.valueOf(stringBuffer);
     }
 
     /**

@@ -57,32 +57,20 @@ public enum PptCorrectEnums {
     /** 检查幻灯片切换方式 */
     CHECK_SWITCH_STYLE(15,"CHECK_SWITCH_STYLE", "检查幻灯片切换方式"),
 
-    /** 检查进入动画类型 */
-    CHECK_ANIMATION_IN(16,"CHECK_ANIMATION_IN", "检查进入动画类型"),
-
-    /** 检查强调动画类型 */
-    CHECK_ANIMATION_EMPHASIZE(17,"CHECK_ANIMATION_EMPHASIZE", "检查强调动画类型"),
-
-    /** 检查退出动画类型 */
-    CHECK_ANIMATION_OUT(18,"CHECK_ANIMATION_OUT", "检查退出动画类型"),
+    /** 检查动画类型（entr/emph/exit） */
+    CHECK_ANIMATION_TYPE(16,"CHECK_ANIMATION_TYPE", "检查动画类型"),
 
     /** 检查文本框背景颜色 */
-    CHECK_TEXT_BOX_BACKGROUND_COLOR(19, "CHECK_TEXT_BOX_BACKGROUND_COLOR", "检查文本框背景颜色"),
+    CHECK_TEXT_BOX_BACKGROUND_COLOR(17, "CHECK_TEXT_BOX_BACKGROUND_COLOR", "检查文本框背景颜色"),
 
-    /** 检查单击触发动画方式 */
-    CHECK_START_BY_CLICK(20,"CHECK_START_BY_CLICK", "检查单击触发动画方式"),
-
-    /** 检查从上一项开始的触发动画方式 */
-    CHECK_START_BY_WITH(21,"CHECK_START_BY_WITH", "检查从上一项开始的触发动画方式"),
-
-    /** 检查从上一项之后开始的触发动画方式 */
-    CHECK_START_BY_AFTER(22,"CHECK_START_BY_AFTER", "检查从上一项之后开始的触发动画方式"),
+    /** 检查触发动画方式 */
+    CHECK_ANIMATION_START_STYLE(18,"CHECK_ANIMATION_START_STYLE", "检查触发动画方式"),
 
     /** 检查动画延迟时间 */
-    CHECK_ANIMATION_DELAY(23,"CHECK_ANIMATION_DELAY", "检查动画延迟时间"),
+    CHECK_ANIMATION_DELAY(19,"CHECK_ANIMATION_DELAY", "检查动画延迟时间"),
 
     /** 检查动画持续时间 */
-    CHECK_ANIMATION_DUR(24,"CHECK_ANIMATION_DUR", "检查动画持续时间");
+    CHECK_ANIMATION_DUR(20,"CHECK_ANIMATION_DUR", "检查动画持续时间");
 
     /** 属性id */
     private final Integer id;
