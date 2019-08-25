@@ -1,61 +1,308 @@
 package com.gzmut.office.service.impl;
 
-import com.gzmut.office.bean.CorrectInfo;
+import com.alibaba.fastjson.JSON;
+import com.gzmut.office.bean.PptElementValidationEntity;
+import com.gzmut.office.bean.PptValidationEntity;
+import com.gzmut.office.enums.CheckInfoResult;
+import com.gzmut.office.enums.CheckStatus;
+import com.gzmut.office.enums.ParamMatchEnum;
+import com.gzmut.office.enums.PowerPointConstants;
+import com.gzmut.office.enums.ppt.PptCorrectEnums;
+import com.gzmut.office.enums.ppt.PptTargetEnums;
+import com.gzmut.office.util.EnumUtils;
+import com.gzmut.office.util.PptUtils;
+
+import org.apache.poi.xslf.usermodel.XMLSlideShow;
+import org.apache.poi.xslf.usermodel.XSLFSlide;
 import org.junit.Test;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class PptCorrectServiceImplTest {
+    /**
+     * JUnit test class resource folder path
+     */
+    private String resourcePath = getClass().getResource("/").getPath();
 
-        @Test
-        public void demo01() {
-        List<String> jsonArrayList = new ArrayList<>(8);
-        String rule1 = "[{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_LEVEL\",\"param\":{\"TITLE\":\"1\",\"FIRST_TEXT\":\"1\",\"SECOND_TEXT\":\"\"},\"location\":{\"lp\":\"1\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_LEVEL\",\"param\":{\"TITLE\":\"1\",\"FIRST_TEXT\":\"5\",\"SECOND_TEXT\":\"\"},\"location\":{\"lp\":\"2\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_LEVEL\",\"param\":{\"TITLE\":\"1\",\"FIRST_TEXT\":\"3\",\"SECOND_TEXT\":\"3\"},\"location\":{\"lp\":\"3\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_LEVEL\",\"param\":{\"TITLE\":\"1\",\"FIRST_TEXT\":\"3\",\"SECOND_TEXT\":\"2\"},\"location\":{\"lp\":\"4\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_LEVEL\",\"param\":{\"TITLE\":\"1\",\"FIRST_TEXT\":\"4\",\"SECOND_TEXT\":\"0\"},\"location\":{\"lp\":\"5\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_LEVEL\",\"param\":{\"TITLE\":\"1\",\"FIRST_TEXT\":\"4\",\"SECOND_TEXT\":\"5\"},\"location\":{\"lp\":\"6\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_LEVEL\",\"param\":{\"TITLE\":\"1\",\"FIRST_TEXT\":\"\",\"SECOND_TEXT\":\"\"},\"location\":{\"lp\":\"8\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_LEVEL\",\"param\":{\"TITLE\":\"1\",\"FIRST_TEXT\":\"\",\"SECOND_TEXT\":\"\"},\"location\":{\"lp\":\"9\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_LEVEL\",\"param\":{\"TITLE\":\"1\",\"FIRST_TEXT\":\"3\",\"SECOND_TEXT\":\"\"},\"location\":{\"lp\":\"13\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_LEVEL\",\"param\":{\"TITLE\":\"1\",\"FIRST_TEXT\":\"\",\"SECOND_TEXT\":\"\"},\"location\":{\"lp\":\"14\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_LEVEL\",\"param\":{\"TITLE\":\"1\",\"FIRST_TEXT\":\"4\",\"SECOND_TEXT\":\"\"},\"location\":{\"lp\":\"15\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_BOX_CONTENT_FORMAT\",\"param\":{\"TEXT_STYLE\":\"\",\"TEXT_SIZE\":\"\",\"TEXT_COLOR\":\"\"},\"location\":{\"lp\":\"1,15\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_SLIDE_NUMBER\",\"param\":{\"COUNT\":\"15\"},\"location\":{\"lp\":\"\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_BOX_CONTENT\",\"param\":{\"TEXT_CONTENT\":\"中国注册税务师协会&#@@#&The china certified tax agents association\"},\"location\":{\"lp\":\"1\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_BOX_CONTENT\",\"param\":{\"TEXT_CONTENT\":\"目录&#@@#&一、协会概况&#@@#&二、协会服务&#@@#&三、教育培训&#@@#&四、党建统战&#@@#&五、联系我们\"},\"location\":{\"lp\":\"2\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_BOX_CONTENT\",\"param\":{\"TEXT_CONTENT\":\"一、协会概况&#@@#&行业概况&#@@#&协会基本情况&#@@#&行业发展经历&#@@#&行业发展规划&#@@#&协会章程&#@@#&组织结构\"},\"location\":{\"lp\":\"3\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_BOX_CONTENT\",\"param\":{\"TEXT_CONTENT\":\"协会基本情况&#@@#&中国注册税务师协会（前身为中国税务咨询协会），成立于1995年2月28日，是经中华人民共和国民政部批准的全国一级社团组织，是由中国注册税务师和税务师事务所组成的行业民间自律管理组织，受民政部和国家税务总局的业务指导和监督管理。英文缩写为CCTAA。协会与多个国际同行业组织建立了友好合作关系，并于2004年11月加入亚洲一大洋洲税务师协会（AOTCA），成为其正式会员。&#@@#&协会宗旨&#@@#&遵守国家法律法规和政策，团结、教育和引导注册税务师及其执业人员，以经济建设为中心，促进社会主义市场经济的发展，维护税收法律法规及规章制度的严肃性，做到正确实施，遵守职业道德，认真履行义务，维护国家利益和会员及被代理人的合法权益，加强会员的联系与合作，协调税务师事务所及其执业人员与委托代理人之间的关系，在政府及有关部门与会员之间起到桥梁和纽带作用，实施注册税务师行业自律管理，促进行业健康发展，为改革开放和繁荣社会主义市场经济服务。&#@@#&协会主要职能&#@@#&“服务、监督、管理、协调”是中国注册税务师协会的主要职能。\"},\"location\":{\"lp\":\"4\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_LAYOUT_STYLE\",\"param\":{\"LAYOUT_STYLE\":\"TITLE_AND_CONTENT\"},\"location\":{\"lp\":\"4\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_BOX_CONTENT\",\"param\":{\"TEXT_CONTENT\":\"行业发展历程&#@@#&至2014年底，全行业有从业人员10万余人，其中执业注册税务师4万多人；税务师事务所5400多家；行业经营收入140多亿元。&#@@#&行业初创：起步于20世纪80年代中期&#@@#&脱钩改制：1999~2000年底&#@@#&规范发展：2005年12月，国家税务总局颁布了《注册税务师管理暂行办法》，又颁发了“十一五”、“十二五”时期中国注册税务师行业发展的指导意见。\"},\"location\":{\"lp\":\"5\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_LAYOUT_STYLE\",\"param\":{\"LAYOUT_STYLE\":\"TITLE_AND_CONTENT\"},\"location\":{\"lp\":\"5\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_BOX_CONTENT\",\"param\":{\"TEXT_CONTENT\":\"行业发展规划&#@@#&2014年，制定《中国注册税务师行业发展规划（2014年——2017年）》。明确行业发展战略、发展目标。&#@@#&发展战略&#@@#&“专业化发展战略”、“规范化发展战略”、“国际化发展战略”、“信息化发展战略”。&#@@#&发展战略&#@@#&“专业化发展战略”、“规范化发展战略”、“国际化发展战略”、“信息化发展战略”。&#@@#&发展目标&#@@#&“把注册税务师行业建设成为具有国际先进水平和中国特色的现代化中介行业。”&#@@#&核心价值观&#@@#&“诚信、公正、敬业、创新”积极倡导诚信服务、公正独立、爱岗敬业、开拓创新；坚决反对弄虚作假、徇私枉法、消极懒散、因循守旧。\"},\"location\":{\"lp\":\"6\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_BOX_CONTENT\",\"param\":{\"TEXT_CONTENT\":\"二、协会服务\"},\"location\":{\"lp\":\"9\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_BOX_CONTENT\",\"param\":{\"TEXT_CONTENT\":\"三、教育培训&#@@#&名师风采&#@@#&面授培训&#@@#&中税协网校\"},\"location\":{\"lp\":\"13\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_LAYOUT_STYLE\",\"param\":{\"LAYOUT_STYLE\":\"TITLE_AND_CONTENT\"},\"location\":{\"lp\":\"13\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_BOX_CONTENT\",\"param\":{\"TEXT_CONTENT\":\"四、党建统战\"},\"location\":{\"lp\":\"14\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_TEXT_BOX_CONTENT\",\"param\":{\"TEXT_CONTENT\":\"五、联系我们&#@@#&地址：北京市海淀区阜成路73号裕惠大厦A座11层&#@@#&邮编：100142&#@@#&电话：010-6841 3988（总机）&#@@#&网址：http://www.cctaa.cn\"},\"location\":{\"lp\":\"15\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"}]";
-        String rule2 = "[{\"score\":\"2.0\",\"knowledge\":\"CHECK_SLIDE_THEME\",\"param\":{\"THEME\":\"五彩缤纷\"},\"location\":{\"lp\":\"1,15\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"2.0\",\"knowledge\":\"CHECK_LAYOUT_NAME\",\"param\":{\"LAYOUT_NAME\":\"CUST&#@@#&PIC_TX&#@@#&CUST&#@@#&TEXT&#@@#&VERT_TITLE_AND_TX&#@@#&CUST&#@@#&TITLE_AND_CONTENT&#@@#&BLANK&#@@#&TITLE\"},\"location\":{\"lp\":\"\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"}]";
-        String rule3 = "[{\"score\":\"3.0\",\"knowledge\":\"CHECK_LAYOUT_STYLE\",\"param\":{\"LAYOUT_STYLE\":\"TITLE\"},\"location\":{\"lp\":\"1\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"}]";
-        String rule4 = "[{\"score\":\"2.0\",\"knowledge\":\"CHECK_TEXT_HYPERLINK\",\"param\":{\"TEXT_HYPERLINK\":\"5\"},\"location\":{\"lp\":\"2\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"2.0\",\"knowledge\":\"CHECK_LAYOUT_STYLE\",\"param\":{\"LAYOUT_STYLE\":\"CUST\"},\"location\":{\"lp\":\"3\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"2.0\",\"knowledge\":\"CHECK_TEXT_ALIGN_STYLE\",\"param\":{\"HORIZONTAL_ALIGN\":\"0,5,0\",\"VERTICAL_ALIGN\":\"0,1,0\"},\"location\":{\"lp\":\"2\",\"ls\":\"\",\"lo\":\"TEXT_BOX\"},\"baseFile\":\"PPT.pptx\"}]";
-        String rule5 = "[{\"score\":\"4.0\",\"knowledge\":\"CHECK_LAYOUT_STYLE\",\"param\":{\"LAYOUT_STYLE\":\"TITLE_AND_CONTENT\"},\"location\":{\"lp\":\"8\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"4.0\",\"knowledge\":\"CHECK_LAYOUT_STYLE\",\"param\":{\"LAYOUT_STYLE\":\"BLANK\"},\"location\":{\"lp\":\"7\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"}]";
-        String rule6 = "[{\"score\":\"2.0\",\"knowledge\":\"CHECK_LAYOUT_STYLE\",\"param\":{\"LAYOUT_STYLE\":\"CUST\"},\"location\":{\"lp\":\"9\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"2.0\",\"knowledge\":\"CHECK_LAYOUT_STYLE\",\"param\":{\"LAYOUT_STYLE\":\"CUST\"},\"location\":{\"lp\":\"14\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"2.0\",\"knowledge\":\"CHECK_LAYOUT_STYLE\",\"param\":{\"LAYOUT_STYLE\":\"BLANK\"},\"location\":{\"lp\":\"10\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"2.0\",\"knowledge\":\"CHECK_LAYOUT_STYLE\",\"param\":{\"LAYOUT_STYLE\":\"BLANK\"},\"location\":{\"lp\":\"11\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"2.0\",\"knowledge\":\"CHECK_LAYOUT_STYLE\",\"param\":{\"LAYOUT_STYLE\":\"BLANK\"},\"location\":{\"lp\":\"12\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"}]";
-        String rule7 = "[{\"score\":\"2.0\",\"knowledge\":\"CHECK_LAYOUT_STYLE\",\"param\":{\"LAYOUT_STYLE\":\"PIC_TX\"},\"location\":{\"lp\":\"15\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"}]";
-        String rule8 = "[{\"score\":\"3.0\",\"knowledge\":\"CHECK_SLIDE_NUMBER\",\"param\":{\"COUNT\":\"15\"},\"location\":{\"lp\":\"\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"},{\"score\":\"3.0\",\"knowledge\":\"CHECK_SECTION\",\"param\":{\"SECTION_NAME\":\"默认节&#@@#&概况&#@@#&服务&#@@#&无标题节\",\"SECTION_NUMBER\":\"2,6,4,3\"},\"location\":{\"lp\":\"\",\"ls\":\"\",\"lo\":\"SLIDE\"},\"baseFile\":\"PPT.pptx\"}]";
-
-        jsonArrayList.add(rule1);
-        jsonArrayList.add(rule2);
-        jsonArrayList.add(rule3);
-        jsonArrayList.add(rule4);
-        jsonArrayList.add(rule5);
-        jsonArrayList.add(rule6);
-        jsonArrayList.add(rule7);
-        jsonArrayList.add(rule8);
-
-        PptCorrectServiceImpl pPtCorrect = new PptCorrectServiceImpl();
-        pPtCorrect.setExamDir(".//temp");
-        List<CorrectInfo> correctInfo = pPtCorrect.correct(jsonArrayList);
-        for(CorrectInfo info : correctInfo) {
-            System.out.println("ppt操作题第 " + info.getNumber() + " 小题, 得分：" + info.getScore() + ", 详细信息：" + System.lineSeparator() + info.getMsg());
-        }
+    /**
+     * JUnit test target include param JSON file path
+     */
+    private String includeParamJson = resourcePath + "includeParamJson.json";
 
 
-        /*for(Map<String, String> map : correctInfo) {
-            if(map != null) {
-                for (Map.Entry<String, String> entry : map.entrySet()) {
-                    String key = entry.getKey();
-                    String value = entry.getValue();
-                    System.out.println("key =" + key + " value = " + value);
-                }
-            }
-        }*/
-    }
+    /**
+     * JUnit test target exclude param JSON file path
+     */
+    private String excludeParamJson = resourcePath + "excludeParamJson.json";
+
+    /**
+     * JUnit test target PowerPoint file path
+     */
+    private String fileName = resourcePath + "PPT.pptx";
+
+    /**
+     * Time format
+     */
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+
+    private PptUtils pptUtils = new PptUtils();
 
     @Test
-    public void demo02() {
-        String rule = "2";
-        String[] match = rule.split(",");
-//        Assert.assertEquals(1, match.length);
-        assert match[0] != null;
-        System.out.println(match[0]);
-        /*System.out.println(match[1]);*/
+    public void ruleDemo() throws IOException {
+        long startTime = System.currentTimeMillis();
+        System.out.println("初始化判题规则中——启动时间：" + dateFormat.format(startTime));
+
+        List<CheckInfoResult> checkInfoResults;
+        List<PptElementValidationEntity> pptElementValidationEntities = new ArrayList<>();
+        PptElementValidationEntity pptElementValidationEntity = new PptElementValidationEntity("01", 3.0f, PptTargetEnums.SMART_ART, readJsonData(includeParamJson), readJsonData(excludeParamJson), 3);
+        pptElementValidationEntities.add(pptElementValidationEntity);
+
+        PptValidationEntity pptValidationEntity = new PptValidationEntity();
+        pptValidationEntity.setId("01")
+                .setFileName("PPT.pptx")
+                .setPptElementValidationEntities(pptElementValidationEntities);
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("初始化判题规则完成——完成时间：" + dateFormat.format(endTime) + "——耗时：" + (endTime - startTime) + "ms");
+        checkInfoResults = initCheck(fileName, pptValidationEntity);
+        checkInfoResults.forEach(
+                checkInfoResult -> System.out.println(System.lineSeparator() + "当前文件——" + fileName + "——校验结果：" + checkInfoResult.getStatus().getDesc() + "——得分：" + checkInfoResult.getScore() + "——详细信息：" + checkInfoResult.getMessage())
+        );
+    }
+
+    /**
+     * PPT文件校验方法（精度：单张幻灯片元素级）
+     *
+     * @param elementValidationEntity 所需校验的元素实体类
+     * @return com.gzmut.office.enums.CheckInfoResult
+     */
+    public CheckInfoResult check(PptElementValidationEntity elementValidationEntity) {
+        if (pptUtils.getSlideShow() == null) return CheckInfoResult.exception(0, "找不到考生文件");
+
+        PptTargetEnums target = elementValidationEntity.getTargetVerify();
+        System.out.println("正在校验" + target.getDesc() + "元素");
+        switch (target) {
+            case SMART_ART:
+                return checkSmartArt(pptUtils.getSlideShow(), elementValidationEntity);
+            case VIDEO:
+                System.out.println("i am come in " + target);
+                return null;
+            case SOUND:
+                System.out.println(" i am come in " + target);
+                return null;
+            case SHAPE:
+                System.out.println("  i am come in " + target);
+                return null;
+            default:
+                return CheckInfoResult.exception(0, "解析目标不存在");
+        }
+    }
+
+    /**
+     * 针对PPT文件校验实体类对其中元素实体类进行遍历校验（精度：PPT文件级）
+     *
+     * @param filePath 所需检测考生文件路径
+     * @param pptValidationEntity PPT校验实体类
+     * @return java.util.List<com.gzmut.office.enums.CheckInfoResult>
+     */
+    public List<CheckInfoResult> initCheck(String filePath, PptValidationEntity pptValidationEntity) {
+        long startTime = System.currentTimeMillis();
+        System.out.println("开始扫描考生文件——启动时间：" + dateFormat.format(startTime));
+        List<CheckInfoResult> checkInfoResults = new ArrayList<>();
+        if (!pptUtils.initXMLSlideShow(filePath)) {
+            checkInfoResults.add(CheckInfoResult.exception(0, "找不到考生文件"));
+        } else {
+            List<PptElementValidationEntity> pptElementValidationEntities = pptValidationEntity.getPptElementValidationEntities();
+            pptElementValidationEntities.forEach(elementValidationEntity -> checkInfoResults.add(check(elementValidationEntity)));
+        }
+        long endTime = System.currentTimeMillis();
+        System.out.println("扫描完成——完成时间：" + dateFormat.format(endTime) + "——耗时：" + (endTime - startTime) + "ms");
+        return checkInfoResults;
+    }
+
+    /**
+     * 针对PPT元素实体校验类对幻灯片对象中具体幻灯片页进行SmartArt元素校验
+     *
+     * @param xmlSlideShow 所需校验的幻灯片对象
+     * @param elementValidationEntity PPT元素实体校验类
+     * @return com.gzmut.office.enums.CheckInfoResult
+     */
+    public CheckInfoResult checkSmartArt(XMLSlideShow xmlSlideShow, PptElementValidationEntity elementValidationEntity) {
+        if (elementValidationEntity.getSlideIndex() > xmlSlideShow.getSlides().size()) {
+            return CheckInfoResult.wrong(0, "无法读取第" + (elementValidationEntity.getSlideIndex() + 1) + "张幻灯片");
+        }
+        XSLFSlide slide = xmlSlideShow.getSlides().get(elementValidationEntity.getSlideIndex());
+        Map<String, Object> includeParams = JSON.parseObject(elementValidationEntity.getIncludeParamJson());
+        Map<String, Object> excludeParams = JSON.parseObject(elementValidationEntity.getExcludeParamJson());
+        CheckInfoResult checkInfoResult = new CheckInfoResult(CheckStatus.CORRECT, 0, System.lineSeparator());
+        CheckInfoResult tempResult;
+        PptCorrectEnums targetEnum;
+        float averageScore = elementValidationEntity.getScore() / (float) (includeParams.size() + excludeParams.size());
+        try {
+
+            System.out.println("开始"+ParamMatchEnum.INCLUDE.getDesc()+"校验");
+            for (String target : includeParams.keySet()) {
+                targetEnum = Objects.requireNonNull(EnumUtils.getEnumByName(PptCorrectEnums.class, target));
+                switch (targetEnum) {
+                    case TEXT_CONTENT:
+                        tempResult = compareTextContent(includeParams.get(target), pptUtils.getSmartArtSpliceText(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.INCLUDE);
+                        break;
+                    case FORMAT:
+                        tempResult = compareParam(includeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_FORMAT_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(),ParamMatchEnum.INCLUDE);
+                        break;
+                    case COLOR:
+                        tempResult = compareParam(includeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_COLOR_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(),ParamMatchEnum.INCLUDE);
+                        break;
+                    case STYLE:
+                        tempResult = compareParam(includeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_STYLE_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(),ParamMatchEnum.INCLUDE);
+                        break;
+                    default:
+                        continue;
+                }
+                if (tempResult != null) {
+                    if (checkInfoResult.getStatus() == CheckStatus.CORRECT && tempResult.getStatus() != CheckStatus.CORRECT) {
+                        checkInfoResult.setStatus(tempResult.getStatus());
+                    }
+                    checkInfoResult.setMessage(checkInfoResult.getMessage() + tempResult.getMessage());
+                    checkInfoResult.setScore(checkInfoResult.getScore() + tempResult.getScore());
+                }
+            }
+            System.out.println("校验完成");
+
+            System.out.println("开始"+ParamMatchEnum.EXCLUDE.getDesc()+"校验");
+            for (String target : excludeParams.keySet()) {
+                targetEnum = Objects.requireNonNull(EnumUtils.getEnumByName(PptCorrectEnums.class, target));
+                switch (targetEnum) {
+                    case TEXT_CONTENT:
+                        tempResult = compareTextContent(excludeParams.get(target), pptUtils.getSmartArtSpliceText(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
+                        break;
+                    case FORMAT:
+                        tempResult = compareParam(excludeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_FORMAT_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(),ParamMatchEnum.EXCLUDE);
+                        break;
+                    case COLOR:
+                        tempResult = compareParam(excludeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_COLOR_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(),ParamMatchEnum.EXCLUDE);
+                        break;
+                    case STYLE:
+                        tempResult = compareParam(excludeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_STYLE_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(),ParamMatchEnum.EXCLUDE);
+                        break;
+                    default:
+                        continue;
+                }
+                if (tempResult != null) {
+                    if (checkInfoResult.getStatus() == CheckStatus.CORRECT && tempResult.getStatus() != CheckStatus.CORRECT) {
+                        checkInfoResult.setStatus(tempResult.getStatus());
+                    }
+                    checkInfoResult.setMessage(checkInfoResult.getMessage() + tempResult.getMessage());
+                    checkInfoResult.setScore(checkInfoResult.getScore() + tempResult.getScore());
+                }
+            }
+            System.out.println("校验完成");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CheckInfoResult.exception(0, "解析发生异常:" + e.getMessage());
+        }
+        return checkInfoResult;
+    }
+
+    /**
+     * Map<String,String>参数对比（分为匹配模式和排除模式）
+     *
+     * @param correctSampleObject 标准参数对象
+     * @param params 所需校验的参数对象
+     * @param score 该题总分
+     * @param desc 校验描述信息
+     * @param matchModel 对比模式（匹配模式/排除模式）
+     * @return com.gzmut.office.enums.CheckInfoResult
+     */
+    public CheckInfoResult compareParam(Object correctSampleObject, Map<String, String> params, float score, String desc, ParamMatchEnum matchModel) {
+        Map<String, Object> correctSample = JSON.parseObject(String.valueOf(correctSampleObject));
+        CheckInfoResult checkInfoResult = new CheckInfoResult();
+        checkInfoResult.setStatus(CheckStatus.CORRECT);
+        StringBuilder stringBuilder = new StringBuilder();
+        int wrongCount = 0;
+        for (String key : correctSample.keySet()) {
+            if (matchModel == ParamMatchEnum.INCLUDE) {
+                if (!correctSample.get(key).equals(params.get(key))) {
+                    wrongCount++;
+                    stringBuilder.append(desc).append("——错误×——参数:").append(key).append("——参数值:").append(params.get(key)).append(System.lineSeparator());
+                    checkInfoResult.setStatus(CheckStatus.WRONG);
+                } else {
+                    stringBuilder.append(desc).append("——正确√——参数:").append(key).append("——参数值:").append(params.get(key)).append(System.lineSeparator());
+                }
+            }else if(matchModel == ParamMatchEnum.EXCLUDE){
+                if (!correctSample.get(key).equals(params.get(key))) {
+                    stringBuilder.append(desc).append("——正确√——参数:").append(key).append("——参数值:").append(params.get(key)).append(System.lineSeparator());
+                } else {
+                    wrongCount++;
+                    stringBuilder.append(desc).append("——错误×——参数:").append(key).append("——参数值:").append(params.get(key)).append(System.lineSeparator());
+                    checkInfoResult.setStatus(CheckStatus.WRONG);
+                }
+            }
+        }
+        checkInfoResult.setScore(score - (score * ((float) wrongCount / (float) correctSample.size())));
+        checkInfoResult.setMessage(stringBuilder.toString());
+        return checkInfoResult;
+    }
+
+    /**
+     * 文本内容对比（分为匹配模式和排除模式）
+     *
+     * @param correctSampleObject 标准文本对象
+     * @param textContent 所需校验的文本对象
+     * @param score 该题总分
+     * @param desc 校验描述信息
+     * @param matchModel 对比模式（匹配模式/排除模式）
+     * @return com.gzmut.office.enums.CheckInfoResult
+     */
+    public CheckInfoResult compareTextContent(Object correctSampleObject, String textContent, float score, String desc, ParamMatchEnum matchModel) {
+        if (matchModel == ParamMatchEnum.INCLUDE) {
+            if (!String.valueOf(correctSampleObject).equals(textContent)) {
+                return new CheckInfoResult(CheckStatus.WRONG, 0, desc + "——错误×——文本内容:" + textContent+System.lineSeparator());
+            } else {
+                return new CheckInfoResult(CheckStatus.CORRECT, score, desc + "——正确√——文本内容:" + textContent+System.lineSeparator());
+            }
+        } else if (matchModel == ParamMatchEnum.EXCLUDE) {
+            if (!String.valueOf(correctSampleObject).equals(textContent)) {
+                return new CheckInfoResult(CheckStatus.CORRECT, score, desc + "——正确√——文本内容:" + textContent+System.lineSeparator());
+            } else {
+                return new CheckInfoResult(CheckStatus.WRONG, 0, desc + "——错误×——文本内容:" + textContent+System.lineSeparator());
+            }
+        }
+        return null;
+}
+
+    public static String readJsonData(String pactFile) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        File myFile = new File(pactFile);//"D:"+File.separatorChar+"DStores.json"
+        if (!myFile.exists()) {
+            System.err.println("Can't Find " + pactFile);
+        }
+        try {
+            FileInputStream fis = new FileInputStream(pactFile);
+            InputStreamReader inputStreamReader = new InputStreamReader(fis, StandardCharsets.UTF_8);
+            BufferedReader in = new BufferedReader(inputStreamReader);
+
+            String str;
+            while ((str = in.readLine()) != null) {
+                stringBuilder.append(str);  //new String(str,"UTF-8")
+            }
+            in.close();
+        } catch (IOException e) {
+            e.getStackTrace();
+        }
+        return stringBuilder.toString();
     }
 }

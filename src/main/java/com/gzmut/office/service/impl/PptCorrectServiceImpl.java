@@ -8,14 +8,19 @@ import com.gzmut.office.enums.ppt.PptCorrectEnums;
 import com.gzmut.office.service.ICorrect;
 import com.gzmut.office.util.PptCheckUtils;
 import com.gzmut.office.util.PptUtils;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.File;
-import java.util.*;
 
 /**
  * 主要实现MS Office 2010
@@ -41,7 +46,7 @@ public class PptCorrectServiceImpl implements ICorrect {
     }
 
     @Override
-    public List<CorrectInfo> correct(List<String> correctJson) {
+    public List<CorrectInfo>  correct(List<String> correctJson) {
 
         log.info(System.currentTimeMillis() + ":准备扫描考生文件...");
         List<CorrectInfo> correctInfoList = new LinkedList<>();
@@ -80,7 +85,7 @@ public class PptCorrectServiceImpl implements ICorrect {
         return correctInfo;
     }
 
-    private CorrectInfo statistics(int id, Float score, String message) {
+    public CorrectInfo statistics(int id, Float score, String message) {
 
         CorrectInfo info = new CorrectInfo();
         info.setNumber(id);
