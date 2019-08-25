@@ -1,10 +1,13 @@
 package com.gzmut.office.util;
 
-import com.gzmut.office.bean.*;
+import com.gzmut.office.bean.Font;
+import com.gzmut.office.bean.HyperLink;
+import com.gzmut.office.bean.ShapeView;
+import com.gzmut.office.bean.Sound;
+import com.gzmut.office.bean.Video;
 import com.gzmut.office.enums.OfficeEnums;
 import com.gzmut.office.enums.PowerPointConstants;
-import lombok.Getter;
-import lombok.Setter;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ooxml.POIXMLDocumentPart;
 import org.apache.poi.xslf.usermodel.XMLSlideShow;
@@ -22,12 +25,20 @@ import org.dom4j.io.SAXReader;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTRegularTextRun;
 import org.w3c.dom.NodeList;
 
-import java.awt.Dimension;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * MS Office 2010 pptx
@@ -80,6 +91,7 @@ public class PptUtils {
         } catch (IOException e) {
             System.out.println("解析工具初始化失败~");
             e.printStackTrace();
+            return false;
         }
 
         System.out.println("解析工具初始化完毕!");
@@ -115,7 +127,7 @@ public class PptUtils {
      * @return org.apache.poi.xslf.usermodel.XMLSlideShow
      */
     public XMLSlideShow getXMLSlideShow() {
-
+        // TODO: 存在异常，当初始化XMLSlideShow后通过此方法无法获取该对象。
         if (this.fileName == null || this.fileName.length() == 0) {
             return null;
         }

@@ -49,11 +49,11 @@ import java.util.Map;
  * b. HyperLink action,
  * c. HyperLink text]
  * <p>
- * 5. 获取单个幻灯片中SmartArt元素的版式主题及范围->[HashMap<String,String>]
+ * 5. 获取单个幻灯片中SmartArt元素的版式类别(type)及值(value)->[HashMap<String,String>]
  * <p>
- * 6. 获取单个幻灯片中SmartArt元素的颜色主题及范围->[HashMap<String,String>]
+ * 6. 获取单个幻灯片中SmartArt元素的颜色类别(type)及值(value)->[HashMap<String,String>]
  * <p>
- * 7. 获取单个幻灯片中SmartArt元素的样式主题及范围->[HashMap<String,String>]
+ * 7. 获取单个幻灯片中SmartArt元素的样式类别(type)及值(value)->[HashMap<String,String>]
  *
  * @author zzzzzzzzzzzzzzz
  * @date 2019-08-05
@@ -90,15 +90,15 @@ public class PptSmartArtTest {
             }
             smartArtAttrResult = pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_FORMAT_RESOURCE_URL_PREFIX);
             if (0 != smartArtAttrResult.size()) {
-                smartArtAttrResult.forEach((type, value) -> System.out.println("第" + slide.getSlideNumber() + "页幻灯片中，搜索到SmartArt————版式主题：" + type + "————版式范围：" + value));
+                smartArtAttrResult.forEach((type, value) -> System.out.println("第" + slide.getSlideNumber() + "页幻灯片中，搜索到SmartArt————版式类别(type)：" + type + "————版式值(value)：" + value));
             }
             smartArtAttrResult = pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_COLOR_RESOURCE_URL_PREFIX);
             if (0 != smartArtAttrResult.size()) {
-                smartArtAttrResult.forEach((type, value) -> System.out.println("第" + slide.getSlideNumber() + "页幻灯片中，搜索到SmartArt————颜色主题：" + type + "———颜色范围：" + value));
+                smartArtAttrResult.forEach((type, value) -> System.out.println("第" + slide.getSlideNumber() + "页幻灯片中，搜索到SmartArt————颜色类别(type)：" + type + "———颜色值(value)：" + value));
             }
             smartArtAttrResult = pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_STYLE_RESOURCE_URL_PREFIX);
             if (0 != smartArtAttrResult.size()) {
-                smartArtAttrResult.forEach((type, value) -> System.out.println("第" + slide.getSlideNumber() + "页幻灯片中，搜索到SmartArt————样式主题：" + type + "———样式范围：" + value));
+                smartArtAttrResult.forEach((type, value) -> System.out.println("第" + slide.getSlideNumber() + "页幻灯片中，搜索到SmartArt————样式类别(type)：" + type + "———样式值(value)：" + value));
             }
             smartArtFontAttrResult = pptUtils.getSmartArtFontStyle(slide);
             if (0 != smartArtFontAttrResult.size()) {
@@ -287,7 +287,7 @@ public class PptSmartArtTest {
 
     /**
      * 根据所传递的资源路径获取单个幻灯片中SmartArt元素的对应属性，
-     * 以[type:pri]键值形式存在取出包装并返回
+     * 以[type:pri]键值(value)形式存在取出包装并返回
      *
      * @param slide       所需获取属性的幻灯片对象
      * @param resourceUrl 所需获取属性的资源文件路径，例：../slide1.xml,../data1.xml,../color.xml

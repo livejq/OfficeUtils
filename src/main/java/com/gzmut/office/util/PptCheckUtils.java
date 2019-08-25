@@ -1,5 +1,6 @@
 package com.gzmut.office.util;
 
+import com.gzmut.office.enums.CheckInfoResult;
 import com.gzmut.office.enums.ppt.PptSectionPropertiesEnums;
 import com.gzmut.office.enums.ppt.PptSlidePropertiesEnums;
 import com.gzmut.office.enums.ppt.PptTargetEnums;
@@ -792,4 +793,5 @@ public class PptCheckUtils {
             }
         }
     }
+
 }
