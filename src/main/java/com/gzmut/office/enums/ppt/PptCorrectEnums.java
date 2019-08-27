@@ -114,17 +114,30 @@ public enum PptCorrectEnums implements CommonEnum {
      */
     CHECK_ANIMATION_DUR(20, "CHECK_ANIMATION_DUR", "检查动画持续时间"),
 
-    /** 检查版式 */
-    FORMAT(21,"FORMAT","检查版式"),
+    /**
+     * 检查版式
+     */
+    FORMAT(21, "FORMAT", "检查版式"),
 
-    /** 检查文本内容 */
-    TEXT_CONTENT(22,"TEXT_CONTENT","检查文本内容"),
+    /**
+     * 检查文本内容
+     */
+    TEXT_CONTENT(22, "TEXT_CONTENT", "检查文本内容"),
 
-    /** 检查样式 */
-    STYLE(23,"STYLE","检查样式"),
+    /**
+     * 检查样式
+     */
+    STYLE(23, "STYLE", "检查样式"),
 
-    /** 检查颜色 */
-    COLOR(24,"COLOR","检查颜色");
+    /**
+     * 检查颜色
+     */
+    COLOR(24, "COLOR", "检查颜色"),
+
+    /**
+     * 检查字体
+     */
+    FONT(25, "FONT", "检查字体");
 
     /**
      * 属性id

@@ -16,18 +16,18 @@ public enum CheckStatus implements CommonEnum {
     /**
      * 答案正确
      */
-    CORRECT(0, "CORRECT", "正确"),
+    CORRECT(0, "CORRECT", "全部正确√"),
 
     /**
      * 答案错误
      */
-    WRONG(1, "WRONG", "错误"),
+    WRONG(1, "WRONG", "存在错误×"),
 
 
     /**
      * 发生异常
      */
-    EXCEPTION(2, "EXCEPTION", "异常");
+    EXCEPTION(2, "EXCEPTION", "校验异常⚠");
 
     /**
      * 字段ID
