@@ -26,7 +26,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -80,9 +79,9 @@ public class PptCorrectServiceImplTest {
 
         long endTime = System.currentTimeMillis();
         System.out.println("初始化判题规则完成——完成时间：" + dateFormat.format(endTime) + "——耗时：" + (endTime - startTime) + "ms");
-        checkInfoResults = initCheck(fileName, pptValidationEntity);
+        checkInfoResults = checkPpt(fileName, pptValidationEntity);
         checkInfoResults.forEach(
-                checkInfoResult -> System.out.println(System.lineSeparator() + "当前文件——" + fileName + "——校验结果：" + checkInfoResult.getStatus().getDesc() + "——得分：" + checkInfoResult.getScore() + "——详细信息：" + checkInfoResult.getMessage())
+                checkInfoResult -> System.out.println(System.lineSeparator() + "当前文件——" + fileName + System.lineSeparator() + "校验结果：" + checkInfoResult.getStatus().getDesc() + "——得分：" + checkInfoResult.getScore() + "——详细信息：" + checkInfoResult.getMessage())
         );
     }
 
@@ -92,7 +91,7 @@ public class PptCorrectServiceImplTest {
      * @param elementValidationEntity 所需校验的元素实体类
      * @return com.gzmut.office.enums.CheckInfoResult
      */
-    public CheckInfoResult check(PptElementValidationEntity elementValidationEntity) {
+    public CheckInfoResult checkPptElement(PptElementValidationEntity elementValidationEntity) {
         if (pptUtils.getSlideShow() == null) return CheckInfoResult.exception(0, "找不到考生文件");
 
         PptTargetEnums target = elementValidationEntity.getTargetVerify();
@@ -121,7 +120,7 @@ public class PptCorrectServiceImplTest {
      * @param pptValidationEntity PPT校验实体类
      * @return java.util.List<com.gzmut.office.enums.CheckInfoResult>
      */
-    public List<CheckInfoResult> initCheck(String filePath, PptValidationEntity pptValidationEntity) {
+    public List<CheckInfoResult> checkPpt(String filePath, PptValidationEntity pptValidationEntity) {
         long startTime = System.currentTimeMillis();
         System.out.println("开始扫描考生文件——启动时间：" + dateFormat.format(startTime));
         List<CheckInfoResult> checkInfoResults = new ArrayList<>();
@@ -129,7 +128,7 @@ public class PptCorrectServiceImplTest {
             checkInfoResults.add(CheckInfoResult.exception(0, "找不到考生文件"));
         } else {
             List<PptElementValidationEntity> pptElementValidationEntities = pptValidationEntity.getPptElementValidationEntities();
-            pptElementValidationEntities.forEach(elementValidationEntity -> checkInfoResults.add(check(elementValidationEntity)));
+            pptElementValidationEntities.forEach(elementValidationEntity -> checkInfoResults.add(checkPptElement(elementValidationEntity)));
         }
         long endTime = System.currentTimeMillis();
         System.out.println("扫描完成——完成时间：" + dateFormat.format(endTime) + "——耗时：" + (endTime - startTime) + "ms");
@@ -151,7 +150,6 @@ public class PptCorrectServiceImplTest {
         Map<String, Object> includeParams = JSON.parseObject(elementValidationEntity.getIncludeParamJson());
         Map<String, Object> excludeParams = JSON.parseObject(elementValidationEntity.getExcludeParamJson());
         CheckInfoResult checkInfoResult = new CheckInfoResult(CheckStatus.CORRECT, 0, System.lineSeparator());
-        CheckInfoResult tempResult = null;
         PptCorrectEnums targetEnum;
         float averageScore = elementValidationEntity.getScore() / (float) (includeParams.size() + excludeParams.size());
         try {
@@ -161,26 +159,25 @@ public class PptCorrectServiceImplTest {
                 targetEnum = Objects.requireNonNull(EnumUtils.getEnumByName(PptCorrectEnums.class, target));
                 switch (targetEnum) {
                     case TEXT_CONTENT:
-                        tempResult = compareTextContent(includeParams.get(target), pptUtils.getSmartArtSpliceText(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.INCLUDE);
+                        checkInfoResult = compareTextContent(checkInfoResult, includeParams.get(target), pptUtils.getSmartArtSpliceText(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.INCLUDE);
                         break;
                     case FORMAT:
-                        tempResult = compareSingleLayerParam(includeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_FORMAT_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(), ParamMatchEnum.INCLUDE);
+                        checkInfoResult = compareSingleLayerParam(checkInfoResult, includeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_FORMAT_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(), ParamMatchEnum.INCLUDE);
                         break;
                     case COLOR:
-                        tempResult = compareSingleLayerParam(includeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_COLOR_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(), ParamMatchEnum.INCLUDE);
+                        checkInfoResult = compareSingleLayerParam(checkInfoResult, includeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_COLOR_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(), ParamMatchEnum.INCLUDE);
                         break;
                     case STYLE:
-                        tempResult = compareSingleLayerParam(includeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_STYLE_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(), ParamMatchEnum.INCLUDE);
+                        checkInfoResult = compareSingleLayerParam(checkInfoResult, includeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_STYLE_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(), ParamMatchEnum.INCLUDE);
                         break;
                     case FONT:
-                        tempResult = compareMultiLayerParam(includeParams.get(target), pptUtils.getSmartArtFontStyle(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.INCLUDE);
+                        checkInfoResult = compareMultiLayerParam(checkInfoResult, includeParams.get(target), pptUtils.getSmartArtFontStyle(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.INCLUDE);
+                        break;
+                    case HYPERLINK:
+                        checkInfoResult = compareMultiLayerParam(checkInfoResult, includeParams.get(target), pptUtils.getSmartArtHyperLink(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.INCLUDE);
                         break;
                     default:
-                        continue;
-                }
-                if (tempResult != null) {
-                    checkInfoResult.appendMessage(tempResult.getMessage());
-                    checkInfoResult.appendCheckInfoResult(tempResult.getStatus(), tempResult.getScore(), null);
+                        break;
                 }
             }
             System.out.println("校验完成");
@@ -190,26 +187,25 @@ public class PptCorrectServiceImplTest {
                 targetEnum = Objects.requireNonNull(EnumUtils.getEnumByName(PptCorrectEnums.class, target));
                 switch (targetEnum) {
                     case TEXT_CONTENT:
-                        tempResult = compareTextContent(excludeParams.get(target), pptUtils.getSmartArtSpliceText(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
+                        checkInfoResult = compareTextContent(checkInfoResult, excludeParams.get(target), pptUtils.getSmartArtSpliceText(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
                         break;
                     case FORMAT:
-                        tempResult = compareSingleLayerParam(excludeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_FORMAT_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
+                        checkInfoResult = compareSingleLayerParam(checkInfoResult, excludeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_FORMAT_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
                         break;
                     case COLOR:
-                        tempResult = compareSingleLayerParam(excludeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_COLOR_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
+                        checkInfoResult = compareSingleLayerParam(checkInfoResult, excludeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_COLOR_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
                         break;
                     case STYLE:
-                        tempResult = compareSingleLayerParam(excludeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_STYLE_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
+                        checkInfoResult = compareSingleLayerParam(checkInfoResult, excludeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_STYLE_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
                         break;
                     case FONT:
-                        tempResult = compareMultiLayerParam(includeParams.get(target), pptUtils.getSmartArtFontStyle(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
+                        checkInfoResult = compareMultiLayerParam(checkInfoResult, includeParams.get(target), pptUtils.getSmartArtFontStyle(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
+                        break;
+                    case HYPERLINK:
+                        checkInfoResult = compareMultiLayerParam(checkInfoResult, includeParams.get(target), pptUtils.getSmartArtHyperLink(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
                         break;
                     default:
-                        continue;
-                }
-                if (tempResult != null) {
-                    checkInfoResult.appendMessage(tempResult.getMessage());
-                    checkInfoResult.appendCheckInfoResult(tempResult.getStatus(), tempResult.getScore(), null);
+                        break;
                 }
             }
             System.out.println("校验完成");
@@ -230,9 +226,8 @@ public class PptCorrectServiceImplTest {
      * @param matchModel          对比模式（匹配模式/排除模式）
      * @return com.gzmut.office.enums.CheckInfoResult
      */
-    public CheckInfoResult compareSingleLayerParam(Object correctSampleObject, Map<String, String> params, float score, String desc, ParamMatchEnum matchModel) {
+    public CheckInfoResult compareSingleLayerParam(CheckInfoResult checkInfoResult, Object correctSampleObject, Map<String, String> params, float score, String desc, ParamMatchEnum matchModel) {
         Map<String, Object> correctSample = JSON.parseObject(String.valueOf(correctSampleObject));
-        CheckInfoResult checkInfoResult = new CheckInfoResult();
         float averageScore = (correctSample.size() == 0) ? score : score / (float) (correctSample.size());
         for (String key : correctSample.keySet()) {
             if (matchModel == ParamMatchEnum.INCLUDE) {
@@ -256,40 +251,39 @@ public class PptCorrectServiceImplTest {
      * JSON多层参数对比（分为匹配模式和排除模式）
      *
      * @param correctSampleObject 标准参数对象
-     * @param params 所需校验的参数对象
-     * @param score 该题总分
-     * @param desc 校验描述信息
-     * @param matchModel 对比模式（匹配模式/排除模式）
+     * @param params              所需校验的参数对象
+     * @param score               该题总分
+     * @param desc                校验描述信息
+     * @param matchModel          对比模式（匹配模式/排除模式）
      * @return com.gzmut.office.enums.CheckInfoResult
      */
-    public CheckInfoResult compareMultiLayerParam(Object correctSampleObject, Object params, float score, String desc, ParamMatchEnum matchModel) {
+    public CheckInfoResult compareMultiLayerParam(CheckInfoResult checkInfoResult, Object correctSampleObject, Object params, float score, String desc, ParamMatchEnum matchModel) {
         JSONArray correctSampleJsonArray = JSON.parseArray(JSON.toJSONString(correctSampleObject));
         JSONArray paramJsonArray = JSON.parseArray(JSON.toJSONString(params));
-        CheckInfoResult checkInfoResult = new CheckInfoResult();
         float averageScore = (correctSampleJsonArray.size() == 0) ? score : score / (float) (correctSampleJsonArray.size());
+
         if (matchModel == ParamMatchEnum.INCLUDE) {
-            if (correctSampleJsonArray.size() != 0 && paramJsonArray.size() == 0) {
+            if (correctSampleJsonArray.size() != 0 && paramJsonArray.size() == 0 || correctSampleJsonArray.size() == 0 && paramJsonArray.size() != 0) {
                 checkInfoResult.appendCheckInfoResult(CheckStatus.WRONG, 0, desc);
-            }else {
-                for(Object object : correctSampleJsonArray){
-                    JSONObject jsonObject= JSON.parseObject(JSON.toJSONString(object));
-                    if(paramJsonArray.contains(jsonObject)){
+            } else {
+                for (Object object : correctSampleJsonArray) {
+                    JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(object));
+                    if (paramJsonArray.contains(jsonObject)) {
                         checkInfoResult.appendCheckInfoResult(CheckStatus.CORRECT, averageScore, desc);
-                    }else{
+                    } else {
                         checkInfoResult.appendCheckInfoResult(CheckStatus.WRONG, 0, desc);
                     }
                 }
             }
-
         } else if (matchModel == ParamMatchEnum.EXCLUDE) {
-            if (correctSampleJsonArray.size() != 0 && paramJsonArray.size() == 0) {
-                return CheckInfoResult.correct(averageScore,desc);
-            }else {
-                for(Object object : correctSampleJsonArray){
-                    JSONObject jsonObject= JSON.parseObject(JSON.toJSONString(object));
-                    if(paramJsonArray.contains(jsonObject)){
+            if (correctSampleJsonArray.size() != 0 && paramJsonArray.size() == 0 || correctSampleJsonArray.size() == 0 && paramJsonArray.size() != 0) {
+                return CheckInfoResult.correct(averageScore, desc);
+            } else {
+                for (Object object : correctSampleJsonArray) {
+                    JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(object));
+                    if (paramJsonArray.contains(jsonObject)) {
                         checkInfoResult.appendCheckInfoResult(CheckStatus.WRONG, 0, desc);
-                    }else{
+                    } else {
                         checkInfoResult.appendCheckInfoResult(CheckStatus.CORRECT, averageScore, desc);
                     }
                 }
@@ -308,21 +302,21 @@ public class PptCorrectServiceImplTest {
      * @param matchModel          对比模式（匹配模式/排除模式）
      * @return com.gzmut.office.enums.CheckInfoResult
      */
-    public CheckInfoResult compareTextContent(Object correctSampleObject, String textContent, float score, String desc, ParamMatchEnum matchModel) {
+    public CheckInfoResult compareTextContent(CheckInfoResult checkInfoResult, Object correctSampleObject, String textContent, float score, String desc, ParamMatchEnum matchModel) {
         if (matchModel == ParamMatchEnum.INCLUDE) {
             if (correctSampleObject == null && textContent != null || !String.valueOf(correctSampleObject).equals(textContent)) {
-                return CheckInfoResult.wrong(0, desc);
+                return checkInfoResult.appendCheckInfoResult(CheckStatus.WRONG, 0, desc);
             } else {
-                return CheckInfoResult.correct(score, desc);
+                return checkInfoResult.appendCheckInfoResult(CheckStatus.CORRECT, score, desc);
             }
         } else if (matchModel == ParamMatchEnum.EXCLUDE) {
             if (correctSampleObject == null && textContent != null || !String.valueOf(correctSampleObject).equals(textContent)) {
-                return CheckInfoResult.correct(score, desc);
+                return checkInfoResult.appendCheckInfoResult(CheckStatus.CORRECT, score, desc);
             } else {
-                return CheckInfoResult.wrong(0, desc);
+                return checkInfoResult.appendCheckInfoResult(CheckStatus.WRONG, 0, desc);
             }
         }
-        return null;
+        return checkInfoResult;
     }
 
     public static String readJsonData(String pactFile) throws IOException {

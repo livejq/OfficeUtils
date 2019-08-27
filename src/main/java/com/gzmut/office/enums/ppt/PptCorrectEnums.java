@@ -137,7 +137,9 @@ public enum PptCorrectEnums implements CommonEnum {
     /**
      * 检查字体
      */
-    FONT(25, "FONT", "检查字体");
+    FONT(25, "FONT", "检查字体"),
+
+    HYPERLINK(26,"HYPERLINK","检查超链接");
 
     /**
      * 属性id

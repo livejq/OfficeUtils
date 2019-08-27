@@ -5,12 +5,6 @@
     "convert": "6000"
   },
   "FONT":[
-    {
-      "notBlank" : true,
-      "latinStyle": "Monaco",
-      "size": "900",
-      "bold": "0",
-      "tilt": "1"
-    }
+
   ]
 }
