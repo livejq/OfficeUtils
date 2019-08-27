@@ -81,7 +81,7 @@ public class PptCorrectServiceImplTest {
         System.out.println("初始化判题规则完成——完成时间：" + dateFormat.format(endTime) + "——耗时：" + (endTime - startTime) + "ms");
         checkInfoResults = checkPpt(fileName, pptValidationEntity);
         checkInfoResults.forEach(
-                checkInfoResult -> System.out.println(System.lineSeparator() + "当前文件——" + fileName + System.lineSeparator() + "校验结果：" + checkInfoResult.getStatus().getDesc() + "——得分：" + checkInfoResult.getScore() + "——详细信息：" + checkInfoResult.getMessage())
+                checkInfoResult -> System.out.println(System.lineSeparator() + "当前校验文件——" + fileName + System.lineSeparator() + "校验结果：" + checkInfoResult.getStatus().getDesc() + "——得分：" + checkInfoResult.getScore() + "——详细信息：" + checkInfoResult.getMessage())
         );
     }
 
@@ -146,15 +146,18 @@ public class PptCorrectServiceImplTest {
         if (elementValidationEntity.getSlideIndex() > xmlSlideShow.getSlides().size()) {
             return CheckInfoResult.wrong(0, "无法读取第" + (elementValidationEntity.getSlideIndex() + 1) + "张幻灯片");
         }
+
         XSLFSlide slide = xmlSlideShow.getSlides().get(elementValidationEntity.getSlideIndex());
+
         Map<String, Object> includeParams = JSON.parseObject(elementValidationEntity.getIncludeParamJson());
         Map<String, Object> excludeParams = JSON.parseObject(elementValidationEntity.getExcludeParamJson());
-        CheckInfoResult checkInfoResult = new CheckInfoResult(CheckStatus.CORRECT, 0, System.lineSeparator());
+
+        CheckInfoResult checkInfoResult = new CheckInfoResult(CheckStatus.CORRECT, 0, System.lineSeparator(),elementValidationEntity.getTargetVerify());
         PptCorrectEnums targetEnum;
         float averageScore = elementValidationEntity.getScore() / (float) (includeParams.size() + excludeParams.size());
-        try {
 
-            System.out.println("开始" + ParamMatchEnum.INCLUDE.getDesc() + "校验");
+        System.out.println("开始" + ParamMatchEnum.INCLUDE.getDesc() + "校验");
+        try {
             for (String target : includeParams.keySet()) {
                 targetEnum = Objects.requireNonNull(EnumUtils.getEnumByName(PptCorrectEnums.class, target));
                 switch (targetEnum) {
@@ -199,10 +202,10 @@ public class PptCorrectServiceImplTest {
                         checkInfoResult = compareSingleLayerParam(checkInfoResult, excludeParams.get(target), pptUtils.getSmartArtLayoutAttributes(slide, PowerPointConstants.SMART_ART_STYLE_RESOURCE_URL_PREFIX), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
                         break;
                     case FONT:
-                        checkInfoResult = compareMultiLayerParam(checkInfoResult, includeParams.get(target), pptUtils.getSmartArtFontStyle(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
+                        checkInfoResult = compareMultiLayerParam(checkInfoResult, excludeParams.get(target), pptUtils.getSmartArtFontStyle(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
                         break;
                     case HYPERLINK:
-                        checkInfoResult = compareMultiLayerParam(checkInfoResult, includeParams.get(target), pptUtils.getSmartArtHyperLink(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
+                        checkInfoResult = compareMultiLayerParam(checkInfoResult, excludeParams.get(target), pptUtils.getSmartArtHyperLink(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
                         break;
                     default:
                         break;
@@ -232,15 +235,15 @@ public class PptCorrectServiceImplTest {
         for (String key : correctSample.keySet()) {
             if (matchModel == ParamMatchEnum.INCLUDE) {
                 if (correctSample.size() == 0 && params.size() != 0 || !correctSample.get(key).equals(params.get(key))) {
-                    checkInfoResult.appendCheckInfoResult(CheckStatus.WRONG, 0, desc);
+                    checkInfoResult.appendWrongInfoResult(0, desc);
                 } else {
-                    checkInfoResult.appendCheckInfoResult(CheckStatus.CORRECT, averageScore, desc);
+                    checkInfoResult.appendCorrectInfoResult(averageScore, desc);
                 }
             } else if (matchModel == ParamMatchEnum.EXCLUDE) {
                 if (correctSample.size() == 0 && params.size() != 0 || !correctSample.get(key).equals(params.get(key))) {
-                    checkInfoResult.appendCheckInfoResult(CheckStatus.CORRECT, averageScore, desc);
+                    checkInfoResult.appendCorrectInfoResult(averageScore, desc);
                 } else {
-                    checkInfoResult.appendCheckInfoResult(CheckStatus.WRONG, 0, desc);
+                    checkInfoResult.appendWrongInfoResult( 0, desc);
                 }
             }
         }
@@ -264,27 +267,27 @@ public class PptCorrectServiceImplTest {
 
         if (matchModel == ParamMatchEnum.INCLUDE) {
             if (correctSampleJsonArray.size() != 0 && paramJsonArray.size() == 0 || correctSampleJsonArray.size() == 0 && paramJsonArray.size() != 0) {
-                checkInfoResult.appendCheckInfoResult(CheckStatus.WRONG, 0, desc);
+                checkInfoResult.appendWrongInfoResult( 0, desc);
             } else {
                 for (Object object : correctSampleJsonArray) {
                     JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(object));
                     if (paramJsonArray.contains(jsonObject)) {
-                        checkInfoResult.appendCheckInfoResult(CheckStatus.CORRECT, averageScore, desc);
+                        checkInfoResult.appendCorrectInfoResult( averageScore, desc);
                     } else {
-                        checkInfoResult.appendCheckInfoResult(CheckStatus.WRONG, 0, desc);
+                        checkInfoResult.appendWrongInfoResult( 0, desc);
                     }
                 }
             }
         } else if (matchModel == ParamMatchEnum.EXCLUDE) {
             if (correctSampleJsonArray.size() != 0 && paramJsonArray.size() == 0 || correctSampleJsonArray.size() == 0 && paramJsonArray.size() != 0) {
-                return CheckInfoResult.correct(averageScore, desc);
+                return checkInfoResult.appendCorrectInfoResult(averageScore, desc);
             } else {
                 for (Object object : correctSampleJsonArray) {
                     JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(object));
                     if (paramJsonArray.contains(jsonObject)) {
-                        checkInfoResult.appendCheckInfoResult(CheckStatus.WRONG, 0, desc);
+                        checkInfoResult.appendWrongInfoResult( 0, desc);
                     } else {
-                        checkInfoResult.appendCheckInfoResult(CheckStatus.CORRECT, averageScore, desc);
+                        checkInfoResult.appendCorrectInfoResult( averageScore, desc);
                     }
                 }
             }
@@ -305,15 +308,15 @@ public class PptCorrectServiceImplTest {
     public CheckInfoResult compareTextContent(CheckInfoResult checkInfoResult, Object correctSampleObject, String textContent, float score, String desc, ParamMatchEnum matchModel) {
         if (matchModel == ParamMatchEnum.INCLUDE) {
             if (correctSampleObject == null && textContent != null || !String.valueOf(correctSampleObject).equals(textContent)) {
-                return checkInfoResult.appendCheckInfoResult(CheckStatus.WRONG, 0, desc);
+                return checkInfoResult.appendWrongInfoResult( 0, desc);
             } else {
-                return checkInfoResult.appendCheckInfoResult(CheckStatus.CORRECT, score, desc);
+                return checkInfoResult.appendCorrectInfoResult(score, desc);
             }
         } else if (matchModel == ParamMatchEnum.EXCLUDE) {
             if (correctSampleObject == null && textContent != null || !String.valueOf(correctSampleObject).equals(textContent)) {
-                return checkInfoResult.appendCheckInfoResult(CheckStatus.CORRECT, score, desc);
+                return checkInfoResult.appendCorrectInfoResult( score, desc);
             } else {
-                return checkInfoResult.appendCheckInfoResult(CheckStatus.WRONG, 0, desc);
+                return checkInfoResult.appendWrongInfoResult( 0, desc);
             }
         }
         return checkInfoResult;
