@@ -3,5 +3,14 @@
   "FORMAT": {
     "hierarchy": "1000",
     "convert": "6000"
-  }
+  },
+  "FONT": [
+    {
+      "latinStyle": "Monaco",
+      "size": "900",
+      "bold": "0",
+      "tilt": "1",
+      "notBlank": true
+    }
+  ]
 }

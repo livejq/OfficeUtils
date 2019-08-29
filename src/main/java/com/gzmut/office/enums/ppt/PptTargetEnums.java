@@ -19,27 +19,27 @@ public enum PptTargetEnums implements CommonEnum {
     /**
      * 节
      */
-    SECTION(1, "SECTION", "节"),
+    SECTION(1, "SECTION", "节(Section)"),
 
     /**
      * 幻灯片
      */
-    SLIDE(2, "SLIDE", "幻灯片"),
+    SLIDE(2, "SLIDE", "幻灯片(Slide)"),
 
     /**
      * 文本框
      */
-    TEXT_BOX(3, "TEXT_BOX", "文本框"),
+    TEXT_BOX(3, "TEXT_BOX", "文本框(TextBox)"),
 
     /**
      * 图片
      */
-    PICTURE(4, "PICTURE", "图片"),
+    PICTURE(4, "PICTURE", "图片(Picture)"),
 
     /**
      * 表格
      */
-    TABLE(5, "TABLE", "表格"),
+    TABLE(5, "TABLE", "表格(Table)"),
 
     /**
      * SmartArt
@@ -49,27 +49,27 @@ public enum PptTargetEnums implements CommonEnum {
     /**
      * 声音
      */
-    SOUND(7, "SOUND", "声音"),
+    SOUND(7, "SOUND", "声音(Sound)"),
 
     /**
      * 视频
      */
-    VIDEO(8, "VIDEO", "视频"),
+    VIDEO(8, "VIDEO", "视频(Video)"),
 
     /**
      * 图表
      */
-    CHART(9, "CHART", "图表"),
+    CHART(9, "CHART", "图表(Chart)"),
 
     /**
      * 动画
      */
-    ANIMATION(10, "ANIMATION", "动画"),
+    ANIMATION(10, "ANIMATION", "动画(Animation)"),
 
     /**
      * 形状
      */
-    SHAPE(10, "SHAPE", "形状");
+    SHAPE(10, "SHAPE", "形状(Shape)");
 
     /**
      * 字段ID

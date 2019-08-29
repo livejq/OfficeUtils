@@ -40,4 +40,5 @@ public class Sound {
     public boolean isNotBlank() {
         return (id != null && name != null && url != null);
     }
+
 }

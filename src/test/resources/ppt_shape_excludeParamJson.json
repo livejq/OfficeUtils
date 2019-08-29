@@ -1,0 +1,12 @@
+{
+  "ATTRIBUTE": [
+    {
+      "effectVal": "accent1",
+      "fillVal": "accent1",
+      "fontVal": "tx1",
+      "lnVal": "accent1",
+      "name": "直接连接符",
+      "notBlank": true
+    }
+  ]
+}

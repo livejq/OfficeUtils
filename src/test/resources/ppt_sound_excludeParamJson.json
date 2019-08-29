@@ -1,0 +1,11 @@
+{
+  "ATTRIBUTE": [
+    {
+      "id": "rId2",
+      "name": "背景音乐",
+      "notBlank": true,
+      "showWhenStopped": "0",
+      "url": "/ppt/media/media1.mid"
+    }
+  ]
+}
