@@ -1,0 +1,12 @@
+{
+  "NAME": [
+    {
+      "coverId": "rId4",
+      "coverUrl": "/ppt/media/image4.png",
+      "id": "rId2",
+      "name": "动物相册",
+      "notBlank": true,
+      "url": "/ppt/media/media2.wmv"
+    }
+  ]
+}

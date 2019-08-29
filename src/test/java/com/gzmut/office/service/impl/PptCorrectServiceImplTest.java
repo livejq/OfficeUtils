@@ -5,6 +5,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.gzmut.office.bean.PptElementValidationEntity;
 import com.gzmut.office.bean.PptValidationEntity;
+import com.gzmut.office.bean.ShapeView;
+import com.gzmut.office.bean.Sound;
+import com.gzmut.office.bean.Video;
 import com.gzmut.office.enums.CheckInfoResult;
 import com.gzmut.office.enums.CheckStatus;
 import com.gzmut.office.enums.ParamMatchEnum;
@@ -29,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,18 +46,30 @@ public class PptCorrectServiceImplTest {
     /**
      * JUnit test target include param JSON file path
      */
-    private String includeParamJson = resourcePath + "includeParamJson.json";
+    private String smartArtIncludeParamJson = resourcePath + "ppt_smartArt_includeParamJson.json";
+
+    private String videoIncludeParamJson = resourcePath + "ppt_video_includeParamJson.json";
+
+    private String soundIncludeParamJson = resourcePath + "ppt_sound_includeParamJson.json";
+
+    private String shapeIncludeParamJson = resourcePath + "ppt_shape_includeParamJson.json";
 
 
     /**
      * JUnit test target exclude param JSON file path
      */
-    private String excludeParamJson = resourcePath + "excludeParamJson.json";
+    private String smartArtExcludeParamJson = resourcePath + "ppt_smartArt_excludeParamJson.json";
+
+    private String videoExcludeParamJson = resourcePath + "ppt_video_excludeParamJson.json";
+
+    private String soundExcludeParamJson = resourcePath + "ppt_sound_excludeParamJson.json";
+
+    private String shapeExcludeParamJson = resourcePath + "ppt_shape_excludeParamJson.json";
 
     /**
      * JUnit test target PowerPoint file path
      */
-    private String fileName = resourcePath + "PPT.pptx";
+    private String fileName = resourcePath + "Test.pptx";
 
     /**
      * Time format
@@ -69,8 +85,20 @@ public class PptCorrectServiceImplTest {
 
         List<CheckInfoResult> checkInfoResults;
         List<PptElementValidationEntity> pptElementValidationEntities = new ArrayList<>();
-        PptElementValidationEntity pptElementValidationEntity = new PptElementValidationEntity("01", 3.0f, PptTargetEnums.SMART_ART, readJsonData(includeParamJson), readJsonData(excludeParamJson), 3);
-        pptElementValidationEntities.add(pptElementValidationEntity);
+
+        // SmartArt 元素规则类
+        PptElementValidationEntity pptSmartArtValidationEntity = new PptElementValidationEntity("01", 3.0f, PptTargetEnums.SMART_ART, readJsonData(smartArtIncludeParamJson), readJsonData(smartArtExcludeParamJson), 3);
+        // Video 元素规则类
+        PptElementValidationEntity pptVideoValidationEntity = new PptElementValidationEntity("02", 3.0f, PptTargetEnums.VIDEO, readJsonData(videoIncludeParamJson), readJsonData(videoExcludeParamJson), 7);
+        // Sound 元素规则类
+        PptElementValidationEntity pptSoundValidationEntity = new PptElementValidationEntity("03", 3.0f, PptTargetEnums.SOUND, readJsonData(soundIncludeParamJson), readJsonData(soundExcludeParamJson), 5);
+        // Shape 元素规则类
+        PptElementValidationEntity pptShapeValidationEntity = new PptElementValidationEntity("04", 3.0f, PptTargetEnums.SHAPE, readJsonData(shapeIncludeParamJson), readJsonData(shapeExcludeParamJson), 2);
+
+        pptElementValidationEntities.add(pptSmartArtValidationEntity);
+        pptElementValidationEntities.add(pptVideoValidationEntity);
+        pptElementValidationEntities.add(pptSoundValidationEntity);
+        pptElementValidationEntities.add(pptShapeValidationEntity);
 
         PptValidationEntity pptValidationEntity = new PptValidationEntity();
         pptValidationEntity.setId("01")
@@ -100,14 +128,11 @@ public class PptCorrectServiceImplTest {
             case SMART_ART:
                 return checkSmartArt(pptUtils.getSlideShow(), elementValidationEntity);
             case VIDEO:
-                System.out.println("i am come in " + target);
-                return null;
+                return checkVideo(pptUtils.getSlideShow(), elementValidationEntity);
             case SOUND:
-                System.out.println(" i am come in " + target);
-                return null;
+                return checkSound(pptUtils.getSlideShow(), elementValidationEntity);
             case SHAPE:
-                System.out.println("  i am come in " + target);
-                return null;
+                return checkShape(pptUtils.getSlideShow(), elementValidationEntity);
             default:
                 return CheckInfoResult.exception(0, "解析目标不存在");
         }
@@ -152,7 +177,7 @@ public class PptCorrectServiceImplTest {
         Map<String, Object> includeParams = JSON.parseObject(elementValidationEntity.getIncludeParamJson());
         Map<String, Object> excludeParams = JSON.parseObject(elementValidationEntity.getExcludeParamJson());
 
-        CheckInfoResult checkInfoResult = new CheckInfoResult(CheckStatus.CORRECT, 0, System.lineSeparator(),elementValidationEntity.getTargetVerify());
+        CheckInfoResult checkInfoResult = new CheckInfoResult(CheckStatus.CORRECT, 0, System.lineSeparator(), elementValidationEntity.getTargetVerify());
         PptCorrectEnums targetEnum;
         float averageScore = elementValidationEntity.getScore() / (float) (includeParams.size() + excludeParams.size());
 
@@ -214,7 +239,290 @@ public class PptCorrectServiceImplTest {
             System.out.println("校验完成");
         } catch (Exception e) {
             e.printStackTrace();
+            return CheckInfoResult.exception(0, elementValidationEntity + System.lineSeparator() + "解析发生异常:" + e.getMessage());
+        }
+        return checkInfoResult;
+    }
+
+    /**
+     * 针对PPT元素实体校验类对幻灯片对象中具体幻灯片页进行Video元素校验
+     *
+     * @param xmlSlideShow            所需校验的幻灯片对象
+     * @param elementValidationEntity PPT元素实体校验类
+     * @return com.gzmut.office.enums.CheckInfoResult
+     */
+    public CheckInfoResult checkVideo(XMLSlideShow xmlSlideShow, PptElementValidationEntity elementValidationEntity) {
+        if (elementValidationEntity.getSlideIndex() > xmlSlideShow.getSlides().size()) {
+            return CheckInfoResult.wrong(0, "无法读取第" + (elementValidationEntity.getSlideIndex() + 1) + "张幻灯片");
+        }
+
+        XSLFSlide slide = xmlSlideShow.getSlides().get(elementValidationEntity.getSlideIndex());
+
+        Map<String, Object> includeParams = JSON.parseObject(elementValidationEntity.getIncludeParamJson());
+        Map<String, Object> excludeParams = JSON.parseObject(elementValidationEntity.getExcludeParamJson());
+
+        CheckInfoResult checkInfoResult = new CheckInfoResult(CheckStatus.CORRECT, 0, System.lineSeparator(), elementValidationEntity.getTargetVerify());
+        PptCorrectEnums targetEnum;
+        float averageScore = elementValidationEntity.getScore() / (float) (includeParams.size() + excludeParams.size());
+
+        System.out.println("开始" + ParamMatchEnum.INCLUDE.getDesc() + "校验");
+
+        try {
+            for (String target : includeParams.keySet()) {
+                targetEnum = Objects.requireNonNull(EnumUtils.getEnumByName(PptCorrectEnums.class, target));
+                switch (targetEnum) {
+                    case NAME: {
+                        List<String> correctSoundName = JSON.parseArray(String.valueOf(excludeParams.get(target)), Video.class)
+                                .stream()
+                                .map(Video::getName)
+                                .collect(Collectors.toList());
+                        List<String> videoNameParam = pptUtils.getVideo(slide)
+                                .stream()
+                                .map(Video::getName)
+                                .collect(Collectors.toList());
+                        checkInfoResult = compareSingleLayerParam(checkInfoResult, correctSoundName, videoNameParam, averageScore, targetEnum.getDesc(), ParamMatchEnum.INCLUDE);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+            System.out.println("校验完成");
+
+            System.out.println("开始" + ParamMatchEnum.EXCLUDE.getDesc() + "校验");
+            for (String target : excludeParams.keySet()) {
+                targetEnum = Objects.requireNonNull(EnumUtils.getEnumByName(PptCorrectEnums.class, target));
+                switch (targetEnum) {
+                    case NAME: {
+                        List<String> correctSoundName = JSON.parseArray(String.valueOf(excludeParams.get(target)), Video.class)
+                                .stream()
+                                .map(Video::getName)
+                                .collect(Collectors.toList());
+                        List<String> videoNameParam = pptUtils.getVideo(slide)
+                                .stream()
+                                .map(Video::getName)
+                                .collect(Collectors.toList());
+                        checkInfoResult = compareSingleLayerParam(checkInfoResult, correctSoundName, videoNameParam, averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+            System.out.println("校验完成");
+        } catch (Exception e) {
+            e.printStackTrace();
             return CheckInfoResult.exception(0, elementValidationEntity + "解析发生异常:" + e.getMessage());
+        }
+        return checkInfoResult;
+    }
+
+    /**
+     * 针对PPT元素实体校验类对幻灯片对象中具体幻灯片页进行Sound元素校验
+     *
+     * @param xmlSlideShow            所需校验的幻灯片对象
+     * @param elementValidationEntity PPT元素实体校验类
+     * @return com.gzmut.office.enums.CheckInfoResult
+     */
+    public CheckInfoResult checkSound(XMLSlideShow xmlSlideShow, PptElementValidationEntity elementValidationEntity) {
+        if (elementValidationEntity.getSlideIndex() > xmlSlideShow.getSlides().size()) {
+            return CheckInfoResult.wrong(0, "无法读取第" + (elementValidationEntity.getSlideIndex() + 1) + "张幻灯片");
+        }
+
+        XSLFSlide slide = xmlSlideShow.getSlides().get(elementValidationEntity.getSlideIndex());
+
+        Map<String, Object> includeParams = JSON.parseObject(elementValidationEntity.getIncludeParamJson());
+        Map<String, Object> excludeParams = JSON.parseObject(elementValidationEntity.getExcludeParamJson());
+
+
+        CheckInfoResult checkInfoResult = new CheckInfoResult(CheckStatus.CORRECT, 0, System.lineSeparator(), elementValidationEntity.getTargetVerify());
+        PptCorrectEnums targetEnum;
+        float averageScore = elementValidationEntity.getScore() / (float) (includeParams.size() + excludeParams.size());
+
+        System.out.println("开始" + ParamMatchEnum.INCLUDE.getDesc() + "校验");
+
+        try {
+            for (String target : includeParams.keySet()) {
+                targetEnum = Objects.requireNonNull(EnumUtils.getEnumByName(PptCorrectEnums.class, target));
+                switch (targetEnum) {
+                    case NAME: {
+                        List<String> correctSoundName = JSON.parseArray(String.valueOf(includeParams.get(target)), Sound.class)
+                                .stream()
+                                .map(Sound::getName)
+                                .collect(Collectors.toList());
+                        List<String> soundNameParam = pptUtils.getSound(slide)
+                                .stream()
+                                .map(Sound::getName)
+                                .collect(Collectors.toList());
+                        checkInfoResult = compareSingleLayerParam(checkInfoResult, correctSoundName, soundNameParam, averageScore, targetEnum.getDesc(), ParamMatchEnum.INCLUDE);
+                        break;
+                    }
+                    case ATTRIBUTE: {
+                        List<String> correctSoundAttr = JSON.parseArray(String.valueOf(includeParams.get(target)), Sound.class)
+                                .stream()
+                                .map(Sound::getShowWhenStopped)
+                                .collect(Collectors.toList());
+                        List<String> soundAttrParam = pptUtils.getSound(slide)
+                                .stream()
+                                .map(Sound::getShowWhenStopped)
+                                .collect(Collectors.toList());
+                        checkInfoResult = compareSingleLayerParam(checkInfoResult, correctSoundAttr, soundAttrParam, averageScore, targetEnum.getDesc(), ParamMatchEnum.INCLUDE);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+            System.out.println("校验完成");
+
+            System.out.println("开始" + ParamMatchEnum.EXCLUDE.getDesc() + "校验");
+            for (String target : excludeParams.keySet()) {
+                targetEnum = Objects.requireNonNull(EnumUtils.getEnumByName(PptCorrectEnums.class, target));
+                switch (targetEnum) {
+                    case NAME: {
+                        List<String> correctSoundName = JSON.parseArray(String.valueOf(excludeParams.get(target)), Sound.class)
+                                .stream()
+                                .map(Sound::getName)
+                                .collect(Collectors.toList());
+                        List<String> soundNameParam = pptUtils.getSound(slide)
+                                .stream()
+                                .map(Sound::getName)
+                                .collect(Collectors.toList());
+                        checkInfoResult = compareSingleLayerParam(checkInfoResult, correctSoundName, soundNameParam, averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
+                        break;
+                    }
+                    case ATTRIBUTE: {
+                        List<String> correctSoundAttr = JSON.parseArray(String.valueOf(excludeParams.get(target)), Sound.class)
+                                .stream()
+                                .map(Sound::getShowWhenStopped)
+                                .collect(Collectors.toList());
+                        List<String> soundAttrParam = pptUtils.getSound(slide)
+                                .stream()
+                                .map(Sound::getShowWhenStopped)
+                                .collect(Collectors.toList());
+                        checkInfoResult = compareSingleLayerParam(checkInfoResult, correctSoundAttr, soundAttrParam, averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+            System.out.println("校验完成");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CheckInfoResult.exception(0, elementValidationEntity + "解析发生异常:" + e.getMessage());
+        }
+        return checkInfoResult;
+    }
+
+    /**
+     * 针对PPT元素实体校验类对幻灯片对象中具体幻灯片页进行Sound元素校验
+     *
+     * @param xmlSlideShow            所需校验的幻灯片对象
+     * @param elementValidationEntity PPT元素实体校验类
+     * @return com.gzmut.office.enums.CheckInfoResult
+     */
+    public CheckInfoResult checkShape(XMLSlideShow xmlSlideShow, PptElementValidationEntity elementValidationEntity) {
+        if (elementValidationEntity.getSlideIndex() > xmlSlideShow.getSlides().size()) {
+            return CheckInfoResult.wrong(0, "无法读取第" + (elementValidationEntity.getSlideIndex() + 1) + "张幻灯片");
+        }
+
+        XSLFSlide slide = xmlSlideShow.getSlides().get(elementValidationEntity.getSlideIndex());
+
+        Map<String, Object> includeParams = JSON.parseObject(elementValidationEntity.getIncludeParamJson());
+        Map<String, Object> excludeParams = JSON.parseObject(elementValidationEntity.getExcludeParamJson());
+
+
+        CheckInfoResult checkInfoResult = new CheckInfoResult(CheckStatus.CORRECT, 0, System.lineSeparator(), elementValidationEntity.getTargetVerify());
+        PptCorrectEnums targetEnum;
+        float averageScore = elementValidationEntity.getScore() / (float) (includeParams.size() + excludeParams.size());
+
+        System.out.println("开始" + ParamMatchEnum.INCLUDE.getDesc() + "校验");
+
+        try {
+            for (String target : includeParams.keySet()) {
+                targetEnum = Objects.requireNonNull(EnumUtils.getEnumByName(PptCorrectEnums.class, target));
+                switch (targetEnum) {
+                    case NAME: {
+                        List<String> correctShapeName = JSON.parseArray(String.valueOf(includeParams.get(target)), ShapeView.class)
+                                .stream()
+                                .map(ShapeView::getName)
+                                .collect(Collectors.toList());
+                        List<String> shapeNameParam = pptUtils.getShape(slide)
+                                .stream()
+                                .map(ShapeView::getName)
+                                .collect(Collectors.toList());
+                        checkInfoResult = compareSingleLayerParam(checkInfoResult, correctShapeName, shapeNameParam, averageScore, targetEnum.getDesc(), ParamMatchEnum.INCLUDE);
+                        break;
+                    }
+                    case ATTRIBUTE: {
+                        checkInfoResult = compareMultiLayerParam(checkInfoResult, includeParams.get(target), pptUtils.getShape(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.INCLUDE);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+            System.out.println("校验完成");
+
+            System.out.println("开始" + ParamMatchEnum.EXCLUDE.getDesc() + "校验");
+            for (String target : excludeParams.keySet()) {
+                targetEnum = Objects.requireNonNull(EnumUtils.getEnumByName(PptCorrectEnums.class, target));
+                switch (targetEnum) {
+                    case NAME: {
+                        List<String> correctShapeName = JSON.parseArray(String.valueOf(includeParams.get(target)), ShapeView.class)
+                                .stream()
+                                .map(ShapeView::getName)
+                                .collect(Collectors.toList());
+                        List<String> shapeNameParam = pptUtils.getShape(slide)
+                                .stream()
+                                .map(ShapeView::getName)
+                                .collect(Collectors.toList());
+                        checkInfoResult = compareSingleLayerParam(checkInfoResult, correctShapeName, shapeNameParam, averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
+                        break;
+                    }
+                    case ATTRIBUTE: {
+                        checkInfoResult = compareMultiLayerParam(checkInfoResult, excludeParams.get(target), pptUtils.getShape(slide), averageScore, targetEnum.getDesc(), ParamMatchEnum.EXCLUDE);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+            System.out.println("校验完成");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CheckInfoResult.exception(0, elementValidationEntity + "解析发生异常:" + e.getMessage());
+        }
+        return checkInfoResult;
+    }
+
+    /**
+     * List<String>参数对比（分为匹配模式和排除模式）
+     *
+     * @param correctSampleList 标准参数对象
+     * @param params            所需校验的参数对象
+     * @param score             该题总分
+     * @param desc              校验描述信息
+     * @param matchModel        对比模式（匹配模式/排除模式）
+     * @return com.gzmut.office.enums.CheckInfoResult
+     */
+    public CheckInfoResult compareSingleLayerParam(CheckInfoResult checkInfoResult, List<String> correctSampleList, List<String> params, float score, String desc, ParamMatchEnum matchModel) {
+        float averageScore = (correctSampleList.size() == 0) ? score : score / (float) (correctSampleList.size());
+        for (String str : correctSampleList) {
+            if (matchModel == ParamMatchEnum.INCLUDE) {
+                if (correctSampleList.size() == 0 && params.size() != 0 || !params.contains(str)) {
+                    checkInfoResult.appendWrongInfoResult(0, desc);
+                } else {
+                    checkInfoResult.appendCorrectInfoResult(averageScore, desc);
+                }
+            } else if (matchModel == ParamMatchEnum.EXCLUDE) {
+                if (correctSampleList.size() == 0 && params.size() != 0 || !params.contains(str)) {
+                    checkInfoResult.appendCorrectInfoResult(averageScore, desc);
+                } else {
+                    checkInfoResult.appendWrongInfoResult(0, desc);
+                }
+            }
         }
         return checkInfoResult;
     }
@@ -243,7 +551,7 @@ public class PptCorrectServiceImplTest {
                 if (correctSample.size() == 0 && params.size() != 0 || !correctSample.get(key).equals(params.get(key))) {
                     checkInfoResult.appendCorrectInfoResult(averageScore, desc);
                 } else {
-                    checkInfoResult.appendWrongInfoResult( 0, desc);
+                    checkInfoResult.appendWrongInfoResult(0, desc);
                 }
             }
         }
@@ -267,14 +575,14 @@ public class PptCorrectServiceImplTest {
 
         if (matchModel == ParamMatchEnum.INCLUDE) {
             if (correctSampleJsonArray.size() != 0 && paramJsonArray.size() == 0 || correctSampleJsonArray.size() == 0 && paramJsonArray.size() != 0) {
-                checkInfoResult.appendWrongInfoResult( 0, desc);
+                checkInfoResult.appendWrongInfoResult(0, desc);
             } else {
                 for (Object object : correctSampleJsonArray) {
                     JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(object));
                     if (paramJsonArray.contains(jsonObject)) {
-                        checkInfoResult.appendCorrectInfoResult( averageScore, desc);
+                        checkInfoResult.appendCorrectInfoResult(averageScore, desc);
                     } else {
-                        checkInfoResult.appendWrongInfoResult( 0, desc);
+                        checkInfoResult.appendWrongInfoResult(0, desc);
                     }
                 }
             }
@@ -285,9 +593,9 @@ public class PptCorrectServiceImplTest {
                 for (Object object : correctSampleJsonArray) {
                     JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(object));
                     if (paramJsonArray.contains(jsonObject)) {
-                        checkInfoResult.appendWrongInfoResult( 0, desc);
+                        checkInfoResult.appendWrongInfoResult(0, desc);
                     } else {
-                        checkInfoResult.appendCorrectInfoResult( averageScore, desc);
+                        checkInfoResult.appendCorrectInfoResult(averageScore, desc);
                     }
                 }
             }
@@ -308,15 +616,15 @@ public class PptCorrectServiceImplTest {
     public CheckInfoResult compareTextContent(CheckInfoResult checkInfoResult, Object correctSampleObject, String textContent, float score, String desc, ParamMatchEnum matchModel) {
         if (matchModel == ParamMatchEnum.INCLUDE) {
             if (correctSampleObject == null && textContent != null || !String.valueOf(correctSampleObject).equals(textContent)) {
-                return checkInfoResult.appendWrongInfoResult( 0, desc);
+                return checkInfoResult.appendWrongInfoResult(0, desc);
             } else {
                 return checkInfoResult.appendCorrectInfoResult(score, desc);
             }
         } else if (matchModel == ParamMatchEnum.EXCLUDE) {
             if (correctSampleObject == null && textContent != null || !String.valueOf(correctSampleObject).equals(textContent)) {
-                return checkInfoResult.appendCorrectInfoResult( score, desc);
+                return checkInfoResult.appendCorrectInfoResult(score, desc);
             } else {
-                return checkInfoResult.appendWrongInfoResult( 0, desc);
+                return checkInfoResult.appendWrongInfoResult(0, desc);
             }
         }
         return checkInfoResult;

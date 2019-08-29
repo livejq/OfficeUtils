@@ -67,7 +67,7 @@ public class PptSmartArtTest {
     /**
      * JUnit test target PowerPoint file path
      */
-    private String fileName = resourcePath + "Test.pptx";
+    private String fileName = resourcePath + "PPT.pptx";
 
     /**
      * PowerPoint file test tools class
